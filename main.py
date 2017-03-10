@@ -1,5 +1,6 @@
 import socket
 import sys
+import datetime
 
 # Create a TCP/IP socket
 sock = socket.socket()
@@ -23,10 +24,18 @@ while True:
         # Receive the data in small chunks and retransmit it
         while True:
             data = connection.recv(16)
+            print >>sys.stderr, 'Time "%s"' % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print >>sys.stderr, 'received "%s"' % data
             if data:
-                print >>sys.stderr, 'sending data back to the client'
-                connection.sendall(data)
+                print >>sys.stderr, 'Saving Data'
+
+                filename = datetime.datetime.now().strftime("%Y-%m-%d") + ".txt"
+                fileData = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "," + data + "\n"
+
+                file = open(filename,"a")
+                file.write(fileData)
+                file.close()
+
             else:
                 print >>sys.stderr, 'no more data from', client_address
                 break
