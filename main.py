@@ -36,9 +36,7 @@ while True:
                 file.write(fileData)
                 file.close()
 
-            else:
-                print >>sys.stderr, 'no more data from', client_address
-                break
+
 
     finally:
         # Clean up the connection

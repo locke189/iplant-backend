@@ -1,0 +1,79 @@
+import socket
+import sys
+import datetime
+from Model import Device, Sensor
+from Database import Database
+
+
+# Create a TCP/IP socket
+sock = socket.socket()
+
+# Bind the socket to the port
+server_address = ('', 333)
+print >>sys.stderr, 'starting up on %s port %s' % server_address
+sock.bind(server_address)
+
+#DeviceSetup
+#Database startup
+    #initial setup
+config = {
+  "apiKey": "AIzaSyCeLjnaoNZ6c9BKkccXt5E0H74DGKJWXek",
+  "authDomain": " testproject-cd274.firebaseapp.com",
+  "databaseURL": "https://testproject-cd274.firebaseio.com",
+  "storageBucket": " testproject-cd274.appspot.com"
+}
+DB = Database.Database(config)
+
+#create a device
+device = Device.Device(database=DB, id="0", type="iplant", version="Beta", enabled=True)
+
+#subscribe a sensor
+device.addSensor("0", "MST", "beta", True)
+
+#save device into db
+device.saveDeviceToDB()
+
+#acivate filter run
+#update sensor data
+device.sensors["0"].filterEnable(60)
+
+# Listen for incoming connections
+sock.listen(5)
+
+count = 0
+
+while True:
+    # Wait for a connection
+    print >>sys.stderr, 'waiting for a connection'
+    connection, client_address = sock.accept()
+
+    try:
+        print >>sys.stderr, 'connection from', client_address
+
+        # Receive the data in small chunks and retransmit it
+        while True:
+            data = connection.recv(16)
+            print >>sys.stderr, 'Time "%s"' % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print >>sys.stderr, 'received "%s"' % data
+            if data:
+                print >>sys.stderr, 'Saving Data'
+
+
+                #update sensor data
+                device.sensors["0"].updateData(data)
+
+                #Save sensor historic data
+                device.sensors["0"].saveHistoricRecord()
+
+                if count == 60:
+                    #Save sensor data to DB
+                    device.sensors["0"].saveSensorToDB()
+                    count = 0
+                else:
+                    count += 1
+
+
+    finally:
+        # Clean up the connection
+        print >> sys.stderr, 'Error!'
+        connection.close()
