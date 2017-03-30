@@ -48,7 +48,7 @@ while True:
     # Wait for a connection
     print >>sys.stderr, 'waiting for a connection'
     connection, client_address = sock.accept()
-    connection.settimeout(20)
+    connection.settimeout(90)
     try:
         print >>sys.stderr, 'connection from', client_address
 
