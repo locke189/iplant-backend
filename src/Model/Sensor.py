@@ -22,6 +22,7 @@ class Sensor:
         self.avgData = ""
         self.filter = False
         self.filterSamples = ""
+        self.storageRoute = "/" + str(self.device.id) + "/" + self.id + "/"
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
@@ -74,16 +75,21 @@ class Sensor:
 
     #Saves data into a file
     def saveHistoricRecord(self):
-        filename = "device_" + self.device.id + "_sensor_" + self.id + "_" + datetime.datetime.now().strftime("%Y-%m-%d") + ".txt"
+        self.historicFilename = "device_" + self.device.id + "_sensor_" + self.id + "_" + datetime.datetime.now().strftime("%Y-%m-%d") + ".txt"
         fileData = str(self.timestamp) + "," + str(self.data)
         if self.filter:
             fileData += "," + str(self.avgData)
         fileData +=  "\n"
 
-        file = open(filename,"a")
+        file = open(self.historicFilename,"a")
         file.write(fileData)
         file.close()
+        return self.historicFilename
 
+    #Saves historic data into cloud storage
+    def saveHistoricRecordToStorage(self):
+        path = self.storageRoute + self.historicFilename
+        self.device.storage.saveFile(path,self.historicFilename)
 
 if __name__ == '__main__':
 

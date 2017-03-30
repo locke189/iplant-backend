@@ -2,7 +2,7 @@ import socket
 import sys
 import datetime
 from Model import Device, Sensor
-from Database import Database
+from Database import Database, Storage
 
 
 # Create a TCP/IP socket
@@ -19,14 +19,14 @@ sock.bind(server_address)
     #initial setup
 config = {
   "apiKey": "AIzaSyCeLjnaoNZ6c9BKkccXt5E0H74DGKJWXek",
-  "authDomain": " testproject-cd274.firebaseapp.com",
+  "authDomain": "testproject-cd274.firebaseapp.com",
   "databaseURL": "https://testproject-cd274.firebaseio.com",
-  "storageBucket": " testproject-cd274.appspot.com"
+  "storageBucket": "testproject-cd274.appspot.com"
 }
 DB = Database.Database(config)
-
+store = Storage.Storage(config)
 #create a device
-device = Device.Device(database=DB, id="0", type="iplant", version="Beta", enabled=True)
+device = Device.Device(database=DB, storage=store, id="0", type="iplant", version="Beta", enabled=True)
 
 #subscribe a sensor
 device.addSensor("0", "MST", "beta", True)
@@ -36,7 +36,7 @@ device.saveDeviceToDB()
 
 #acivate filter run
 #update sensor data
-device.sensors["0"].filterEnable(60)
+device.sensors["0"].filterEnable(30)
 
 # Listen for incoming connections
 
@@ -70,13 +70,18 @@ while True:
                 if count == 60:
                     #Save sensor data to DB
                     device.sensors["0"].saveSensorToDB()
+                    device.sensors["0"].saveHistoricRecordToStorage()
                     count = 0
                 else:
                     count += 1
-    except:
+                    
+    except Exception, e:
+        print >> sys.stderr, 'Error exception!'
+        print >> sys.stderr, str(e)
+
         connection.close()
         # Clean up the connection
-        print >> sys.stderr, 'Error exception!'
+
 
     finally:
         # Clean up the connection

@@ -8,8 +8,9 @@ import sys
 import datetime
 
 class Device:
-    def __init__(self, database, id, type, version, enabled, basePath=""):
+    def __init__(self, database, storage, id, type, version, enabled, basePath=""):
         self.db = database
+        self.storage = storage
         self.id = id
         self.type = type
         self.version = version
