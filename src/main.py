@@ -7,6 +7,7 @@ from Database import Database
 
 # Create a TCP/IP socket
 sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind the socket to the port
 server_address = ('', 333)
@@ -38,15 +39,16 @@ device.saveDeviceToDB()
 device.sensors["0"].filterEnable(60)
 
 # Listen for incoming connections
-sock.listen(5)
+
 
 count = 0
 
 while True:
+    sock.listen(5)
     # Wait for a connection
     print >>sys.stderr, 'waiting for a connection'
     connection, client_address = sock.accept()
-
+    connection.settimeout(20)
     try:
         print >>sys.stderr, 'connection from', client_address
 
@@ -71,9 +73,12 @@ while True:
                     count = 0
                 else:
                     count += 1
-
+    except:
+        connection.close()
+        # Clean up the connection
+        print >> sys.stderr, 'Error exception!'
 
     finally:
         # Clean up the connection
-        print >> sys.stderr, 'Error!'
+        print >> sys.stderr, 'Error finally!'
         connection.close()
