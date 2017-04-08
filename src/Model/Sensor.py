@@ -99,7 +99,7 @@ class Sensor:
         self.device.storage.saveFile(path,self.historicFilename)
 
 
-    def datasetDataEntry(data){
+    def datasetDataEntry(data):
         if(len(self.dataset) == self.datasetMax):
             self.dataset.pop(0)
             self.datasetLabel.pop(0)
@@ -108,7 +108,7 @@ class Sensor:
         self.dataset.append(data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
-    }
+    
 
 if __name__ == '__main__':
 
