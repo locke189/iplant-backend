@@ -100,7 +100,7 @@ class Sensor:
         self.device.storage.saveFile(path,self.historicFilename)
 
 
-    def datasetDataEntry(data):
+    def datasetDataEntry(self, data):
         if(len(self.dataset) == self.datasetMax):
             self.dataset.pop(0)
             self.datasetLabel.pop(0)
