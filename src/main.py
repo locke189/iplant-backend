@@ -66,15 +66,15 @@ while True:
 
                 #Save sensor historic data
                 device.sensors["0"].saveHistoricRecord()
+                device.sensors["0"].saveSensorToDB()
 
                 if count == 60:
                     #Save sensor data to DB
-                    device.sensors["0"].saveSensorToDB()
                     device.sensors["0"].saveHistoricRecordToStorage()
                     count = 0
                 else:
                     count += 1
-                    
+
     except Exception, e:
         print >> sys.stderr, 'Error exception!'
         print >> sys.stderr, str(e)

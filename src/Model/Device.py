@@ -25,7 +25,7 @@ class Device:
             "type": self.type,
             "version": self.version,
             "enabled": self.enabled,
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
             }
 
         return data

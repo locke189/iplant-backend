@@ -15,14 +15,15 @@ class Sensor:
         self.type = type
         self.version = version
         self.enabled = enabled
-        self.data = ""
-        self.timestamp = ""
         self.path = device.path + "/sensors/" + str(self.id)
         self.timestamp = ""
         self.avgData = ""
         self.filter = False
         self.filterSamples = ""
         self.storageRoute = "/" + str(self.device.id) + "/" + self.id + "/"
+        self.dataset = []
+        self.datasetLabel = []
+        self.datasetMax = 1500;
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
@@ -48,6 +49,10 @@ class Sensor:
     def updateData(self, data):
         self.data = data
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        #Saving sensor dataset
+        self.datasetDataEntry(data)
+
         #Running AVG filter implementation
         if self.filter:
             self.filterRun(data)
@@ -64,6 +69,8 @@ class Sensor:
             "filter": self.filter,
             "avgData": self.avgData,
             "filterSamples": self.filterSamples
+            "dataset": self.dataset
+            "datasetLabel": self.datasetLabel
             }
         return data
 
@@ -90,6 +97,18 @@ class Sensor:
     def saveHistoricRecordToStorage(self):
         path = self.storageRoute + self.historicFilename
         self.device.storage.saveFile(path,self.historicFilename)
+
+
+    def datasetDataEntry(data){
+        if(len(self.dataset) == self.datasetMax):
+            self.dataset.pop(0)
+            self.datasetLabel.pop(0)
+
+
+        self.dataset.append(data)
+        self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
+
+    }
 
 if __name__ == '__main__':
 
