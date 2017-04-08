@@ -21,9 +21,10 @@ class Sensor:
         self.filter = False
         self.filterSamples = ""
         self.storageRoute = "/" + str(self.device.id) + "/" + self.id + "/"
+        self.data = ""
         self.dataset = []
         self.datasetLabel = []
-        self.datasetMax = 1500;
+        self.datasetMax = 1500
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
@@ -108,7 +109,7 @@ class Sensor:
         self.dataset.append(data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
-    
+
 
 if __name__ == '__main__':
 
