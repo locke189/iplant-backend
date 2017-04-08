@@ -68,8 +68,8 @@ class Sensor:
             "timestamp": self.timestamp,
             "filter": self.filter,
             "avgData": self.avgData,
-            "filterSamples": self.filterSamples
-            "dataset": self.dataset
+            "filterSamples": self.filterSamples,
+            "dataset": self.dataset,
             "datasetLabel": self.datasetLabel
             }
         return data
