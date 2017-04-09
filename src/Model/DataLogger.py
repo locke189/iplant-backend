@@ -29,6 +29,7 @@ class DataLogger:
 
         if(not os.path.exists(self.initFile) ):
             self.saveFile(self.initFile,logInfo)
+            self.logInfo = self.loadFile(self.initFile)
             self.createNewLog(self.getLogFile())
 
         self.logInfo = self.loadFile(self.initFile)
