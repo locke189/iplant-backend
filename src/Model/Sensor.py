@@ -23,8 +23,9 @@ class Sensor:
         self.storageRoute = "/" + str(self.device.id) + "/" + self.id + "/"
         self.data = ""
         self.dataset = []
+        self.datasetAvg = []
         self.datasetLabel = []
-        self.datasetMax = 1500
+        self.datasetMax = 48
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
@@ -51,12 +52,12 @@ class Sensor:
         self.data = data
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        #Saving sensor dataset
-        self.datasetDataEntry(data)
-
         #Running AVG filter implementation
         if self.filter:
             self.filterRun(data)
+
+        #Saving sensor dataset
+        self.datasetDataEntry(self.data, self.avgData)
 
     #Sets the string that is going to be sent to the database
     def getSensorData(self):
@@ -71,6 +72,7 @@ class Sensor:
             "avgData": self.avgData,
             "filterSamples": self.filterSamples,
             "dataset": self.dataset,
+            "datasetAvg": self.datasetAvg,
             "datasetLabel": self.datasetLabel
             }
         return data
@@ -100,12 +102,13 @@ class Sensor:
         self.device.storage.saveFile(path,self.historicFilename)
 
 
-    def datasetDataEntry(self, data):
+    def datasetDataEntry(self, data, avgData):
         if(len(self.dataset) == self.datasetMax):
+            self.datasetAvg.pop(0)
             self.dataset.pop(0)
             self.datasetLabel.pop(0)
 
-
+        self.datasetAvg.append(avgData)
         self.dataset.append(data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
