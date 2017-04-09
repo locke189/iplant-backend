@@ -33,7 +33,7 @@ class DataLogger:
 
         self.logInfo = self.loadFile(self.initFile)
         self.logData = self.loadFile(self.logInfo['openLog'])
-        self.saveLogToStorage(self.logInfo['openLog']):
+        self.saveLogToStorage(self.logInfo['openLog'])
 
     def getFilePath(self, logFile):
         return self.logPrefix + logFile + '.json'
