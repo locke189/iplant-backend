@@ -27,7 +27,7 @@ class DataLogger:
         logInfo['logs'] = []
         logInfo['openLog'] = self.getLogFile()
 
-        if(not os.path.exists(self.initFile) ):
+        if(not os.path.exists(self.getFilePath(self.initFile)) ):
             self.saveFile(self.initFile,logInfo)
             self.logInfo = self.loadFile(self.initFile)
             self.createNewLog(self.getLogFile())
