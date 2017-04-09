@@ -53,7 +53,7 @@ class DataLogger:
     #Saves historic data into cloud storage
     def saveLogToStorage(self, file):
         filepath = self.getFilePath(file)
-        path = self.storageRoute + self.filepath
+        path = self.storageRoute + filepath
         url = self.storage.saveFile(path,filepath)
         return url
 
