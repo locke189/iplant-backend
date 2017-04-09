@@ -41,15 +41,15 @@ class DataLogger:
 
     def saveFile(self, file, data):
         filepath = self.getFilePath(file)
-        if(not os.path.exists(filepath) ):
-            with open(filepath, 'w') as outfile:
-                json.dump(data, outfile)
+        with open(filepath, 'w') as outfile:
+            json.dump(data, outfile)
 
     def loadFile(self, file):
         filepath = self.getFilePath(file)
-        if(not os.path.exists(filepath) ):
+        if(os.path.exists(filepath)):
             with open(filepath) as data_file:
                 return json.load(data_file)
+        print("File does not exist...")
 
     #Saves historic data into cloud storage
     def saveLogToStorage(self, file):
