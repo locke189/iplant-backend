@@ -6,6 +6,8 @@ Don't blink...
 
 import sys
 import datetime
+from DataLogger import DataLogger
+
 
 class Sensor:
     def __init__(self, device, sensorId, type, version, enabled):
@@ -26,6 +28,7 @@ class Sensor:
         self.datasetAvg = []
         self.datasetLabel = []
         self.datasetMax = 48
+        self.dataLogger = DataLogger('sensorinit',device.storage,self.path+"/")
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
@@ -70,7 +73,8 @@ class Sensor:
             "filterSamples": self.filterSamples,
             "dataset": self.dataset,
             "datasetAvg": self.datasetAvg,
-            "datasetLabel": self.datasetLabel
+            "datasetLabel": self.datasetLabel,
+            "historic": self.dataLogger.logInfo["logs"]
             }
         return data
 
