@@ -70,6 +70,7 @@ while True:
 
                 if count == 30:
                     #Save sensor data to DB
+                    device.sensors["0"].datasetDataEntry()
                     device.sensors["0"].saveSensorToDB()
                     device.sensors["0"].saveHistoricRecordToStorage()
                     count = 0

@@ -56,9 +56,6 @@ class Sensor:
         if self.filter:
             self.filterRun(data)
 
-        #Saving sensor dataset
-        self.datasetDataEntry(self.data, self.avgData)
-
     #Sets the string that is going to be sent to the database
     def getSensorData(self):
         data = {
@@ -102,14 +99,14 @@ class Sensor:
         self.device.storage.saveFile(path,self.historicFilename)
 
 
-    def datasetDataEntry(self, data, avgData):
+    def datasetDataEntry(self):
         if(len(self.dataset) == self.datasetMax):
             self.datasetAvg.pop(0)
             self.dataset.pop(0)
             self.datasetLabel.pop(0)
 
-        self.datasetAvg.append(avgData)
-        self.dataset.append(data)
+        self.datasetAvg.append(self.avgData)
+        self.dataset.append(self.data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
 
