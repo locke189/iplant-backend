@@ -31,7 +31,7 @@ class Sensor:
         self.datasetAvg = []
         self.datasetLabel = []
         self.datasetMax = 48
-        self.dataLogger = DataLogger('sensorinit',device.storage,"/"+self.path+"/")
+        self.dataLogger = DataLogger('sensorinit',device.storage,"/"+self.path+"/",self.device)
 
     #Running AVG filter implementation
     def filterEnable(self, samples):

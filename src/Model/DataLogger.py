@@ -12,14 +12,15 @@ import os.path
 import json
 
 class DataLogger:
-    def __init__(self, initFile, storage, storageRoute, logPrefix = ""):
+    def __init__(self, initFile, storage, storageRoute,device,  logPrefix = ""):
         self.initFile = initFile
         self.logInfo = {} #metadata of the existing logs
         self.storage = storage
-        self.storageRoute = storageRoute
+        self.storageRoute = str(storageRoute)
         self.logPrefix = logPrefix
         self.logData = {} #Actual data of a log
         self.openInitFile()
+        self.device = device
 
 
     def openInitFile(self):
@@ -55,9 +56,9 @@ class DataLogger:
 
     #Saves historic data into cloud storage
     def saveLogToStorage(self, file):
-        filepath = self.getFilePath(file)
+        filepath = str(self.getFilePath(file))
         path = self.storageRoute + filepath
-        url = self.storage.saveFile(path,filepath)
+        url = self.device.storage.saveFile(path,filepath)
         return url
 
     def createNewLog(self, logFile):
