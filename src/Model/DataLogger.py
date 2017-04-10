@@ -12,15 +12,16 @@ import os.path
 import json
 
 class DataLogger:
-    def __init__(self, initFile, storage, storageRoute,device,  logPrefix = ""):
+    def __init__(self, initFile, storage, storageRoute,device, logPrefix = ""):
         self.initFile = initFile
         self.logInfo = {} #metadata of the existing logs
         self.storage = storage
         self.storageRoute = str(storageRoute)
         self.logPrefix = logPrefix
         self.logData = {} #Actual data of a log
-        self.openInitFile()
         self.device = device
+        self.openInitFile()
+
 
 
     def openInitFile(self):
