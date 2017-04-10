@@ -75,9 +75,9 @@ class DataLogger:
     def createNewLog(self, logFile):
         self.logInfo['openLog'] = logFile
         logData = {}
-        logData['data'] = []
-        logData['dataAvg'] = []
-        logData['label'] =  []
+        logData['dataset'] = []
+        logData['datasetAvg'] = []
+        logData['datasetLabel'] =  []
         self.saveFile(logFile, logData)
         self.logData = self.loadFile(logFile)
         url = self.saveLogToStorage(logFile)
@@ -90,9 +90,9 @@ class DataLogger:
     def newLogEntry(self, data, dataAvg, label):
         logFile = self.getLogFile()
         self.checkLogOpen(logFile)
-        self.logData['data'].append(data)
-        self.logData['dataAvg'].append(dataAvg)
-        self.logData['label'].append(label)
+        self.logData['dataset'].append(data)
+        self.logData['datasetAvg'].append(dataAvg)
+        self.logData['datasetLabel'].append(label)
         self.saveFile(logFile, self.logData)
 
 
