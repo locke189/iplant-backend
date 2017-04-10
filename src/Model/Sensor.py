@@ -116,6 +116,8 @@ class Sensor:
         self.dataset.append(self.data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
+        self.dataLogger.newLogEntry(self.data, self.avgData, datetime.datetime.now().strftime("%H:%M"))
+
 
 
 if __name__ == '__main__':
