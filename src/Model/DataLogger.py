@@ -55,7 +55,7 @@ class DataLogger:
     def saveLogToStorage(self, file):
         filepath = self.getFilePath(file)
         path = self.storageRoute + filepath
-        url = self.storage.saveFile(path,"/"+filepath)
+        url = self.storage.saveFile(path,filepath)
         return url
 
     def createNewLog(self, logFile):
