@@ -16,7 +16,7 @@ class Storage:
         self.storage = self.firebase.storage()
 
     def saveFile(self, path, file):
-        self.storage.child(path).put(file)
+        self.storage.child(str(path)).put(file)
         print("Saving: " + str(file) + " -> " + path )
         url = self.storage.child(path).get_url(1)
         print("URL: " + str(url) )
