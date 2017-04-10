@@ -37,6 +37,7 @@ class DataLogger:
             self.saveFile(self.initFile,logInfo)
             self.logInfo = self.loadFile(self.initFile)
             self.createNewLog(self.getLogFile())
+            self.saveLogToStorage(self.initFile)
 
         self.logInfo = self.loadFile(self.initFile)
         self.logData = self.loadFile(self.logInfo['openLog'])
@@ -82,6 +83,7 @@ class DataLogger:
         url = self.saveLogToStorage(logFile)
         self.logInfo['logs'].append({'date': logFile, 'url': url})
         self.saveFile(self.initFile, self.logInfo)
+        self.saveLogToStorage(self.initFile)
 
 
 
