@@ -22,6 +22,10 @@ class Storage:
         print("URL: " + str(url) )
         return url
 
+    def downloadFile(self, path, file):
+        self.storage.child(str(path)).download(file)
+        print("Downloading: " + path + " -> "  + str(file))
+
 
     def getUrl(self, path):
         url = self.storage.child(path).get_url(1)

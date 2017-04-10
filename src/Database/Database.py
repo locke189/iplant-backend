@@ -23,6 +23,10 @@ class Database:
         self.db.child(path).update(data)
         print("UPDATE: " + path + " -> " + str(data) )
 
+    def pushData(self, path, data):
+        self.db.child(path).push(data)
+        print("PUSH: " + path + " -> " + str(data) )
+
     def getData(self, path):
         data = self.db.child(path).get()
         if (data != None):

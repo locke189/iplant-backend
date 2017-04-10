@@ -33,6 +33,10 @@ class Sensor:
         self.datasetMax = 48
         self.dataLogger = DataLogger('sensorinit',device.storage,"/"+self.path+"/",self.device)
 
+    def getSensorDataFromDB(self):
+        self.db.getData()
+
+
     #Running AVG filter implementation
     def filterEnable(self, samples):
         self.filter = True

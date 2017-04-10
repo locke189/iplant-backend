@@ -31,6 +31,8 @@ class DataLogger:
         logInfo['logs'] = []
         logInfo['openLog'] = self.getLogFile()
 
+        self.downloadFromStorage(self.initFile)
+
         if(not os.path.exists(self.getFilePath(self.initFile)) ):
             self.saveFile(self.initFile,logInfo)
             self.logInfo = self.loadFile(self.initFile)
@@ -60,6 +62,13 @@ class DataLogger:
         filepath = str(self.getFilePath(file))
         path = self.storageRoute + filepath
         url = self.device.storage.saveFile(path,filepath)
+        return url
+
+    #gets data from storage
+    def downloadFromStorage(self, file):
+        filepath = str(self.getFilePath(file))
+        path = self.storageRoute + filepath
+        url = self.device.storage.downloadFile(path,filepath)
         return url
 
     def createNewLog(self, logFile):
