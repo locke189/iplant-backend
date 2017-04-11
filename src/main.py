@@ -60,7 +60,7 @@ while True:
     connection.settimeout(90)
     try:
         #print >>sys.stderr, 'connection from', client_address
-        console.log('connection from %s', client_address)
+        console.log('Connection from IP=%s, PORT=%s', client_address)
 
         # Receive the data in small chunks and retransmit it
         while True:
