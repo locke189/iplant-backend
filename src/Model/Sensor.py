@@ -10,10 +10,13 @@ Don't blink...
 import sys
 import datetime
 from DataLogger import DataLogger
+from Shared import Logger
 
 
 class Sensor:
-    def __init__(self, device, sensorId, type, version, enabled):
+    def __init__(self, device, sensorId, type, version, enabled,logs=True,logName="Sensor"):
+        self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
+        self.console.log("Initialization...")
         self.db = device.db
         self.device = device
         self.id = sensorId
@@ -31,27 +34,30 @@ class Sensor:
         self.datasetAvg = []
         self.datasetLabel = []
         self.datasetMax = 48
-        self.dataLogger = DataLogger('sensorinit',device.storage,"/"+self.path+"/",self.device)
+        self.dataLogger = DataLogger('sensorinit',self.device.storage,"/"+self.path+"/",self.device)
 
     def getSensorDataFromDB(self):
+        self.console.log("Getting sensor data from database")
         self.db.getData()
 
 
     #Running AVG filter implementation
     def filterEnable(self, samples):
+        self.console.log("Enabling AVG filter - %s samples", (samples))
         self.filter = True
         self.filterSamples = samples
         self.filterData = [0] * self.filterSamples
         self.avgData = 0
 
     def filterRun(self, data):
+        self.console.log("Filtering")
         self.filterData.pop()
         self.filterData.insert(0,int(data))
         self.avgData = sum(self.filterData)/self.filterSamples
-        print(self.filterData)
-        print(self.avgData)
+
 
     def filterDisable(self):
+        self.console.log("AVG Filter disabled")
         self.filter = False
         self.avgData = ""
         self.filterSamples = ""
@@ -59,6 +65,7 @@ class Sensor:
 
     #Update sensor data from device readings
     def updateData(self, data):
+        self.console.log("Updating raw sensor data")
         self.data = data
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -87,39 +94,26 @@ class Sensor:
 
     #Updates data into the Database
     def saveSensorToDB(self):
+        self.console.log("Saving sensor data to database")
         data = self.getSensorData()
         self.db.updateData(self.path,data)
-        print("Sensor Saved")
-
-    #Saves data into a file
-    def saveHistoricRecord(self):
-        self.historicFilename = "device_" + self.device.id + "_sensor_" + self.id + "_" + datetime.datetime.now().strftime("%Y-%m-%d") + ".txt"
-        fileData = str(self.timestamp) + "," + str(self.data)
-        if self.filter:
-            fileData += "," + str(self.avgData)
-        fileData +=  "\n"
-
-        file = open(self.historicFilename,"a")
-        file.write(fileData)
-        file.close()
-        return self.historicFilename
-
-    #Saves historic data into cloud storage
-    def saveHistoricRecordToStorage(self):
-        path = self.storageRoute + self.historicFilename
-        self.device.storage.saveFile(path,self.historicFilename)
 
 
     def datasetDataEntry(self):
+
         if(len(self.dataset) == self.datasetMax):
+            self.console.log("Saving sensor data to dataset (discarding old data)")
             self.datasetAvg.pop(0)
             self.dataset.pop(0)
             self.datasetLabel.pop(0)
+        else:
+            self.console.log("Saving sensor data to dataset")
 
         self.datasetAvg.append(self.avgData)
         self.dataset.append(self.data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
+        self.console.log("Logging dataset")
         self.dataLogger.newLogEntry(self.data, self.avgData, datetime.datetime.now().strftime("%H:%M"))
 
 

@@ -8,31 +8,38 @@ Don't blink...
 '''
 
 import pyrebase
-
+from Shared import Logger
 
 class Database:
-    def __init__(self,options):
+    def __init__(self,options,logs = True):
+        self.console = Logger.Logger(logName='Database', enabled=logs, printConsole=True)
+        self.console.log("Initialization...")
         self.firebase = pyrebase.initialize_app(options)
         self.db = self.firebase.database()
 
     def setData(self, path, data):
         self.db.child(path).set(data)
-        print("SET: " + path + " -> " + str(data) )
+        #print("SET: " + path + " -> " + str(data) )
+        self.console.log("SET: %s -> %s" ,( path,str(data) ) )
 
     def updateData(self, path, data):
         self.db.child(path).update(data)
-        print("UPDATE: " + path + " -> " + str(data) )
+        #print("UPDATE: " + path + " -> " + str(data) )
+        self.console.log("UPDATE: %s -> %s" ,( path,str(data) ) )
 
     def pushData(self, path, data):
         self.db.child(path).push(data)
-        print("PUSH: " + path + " -> " + str(data) )
+        #print("PUSH: " + path + " -> " + str(data) )
+        self.console.log("PUSH: %s -> %s" ,( path,str(data) ) )
 
     def getData(self, path):
         data = self.db.child(path).get()
         if (data != None):
-            print("GET: " + path + " <- " )
-            print(data.val())
-
+            #print("GET: " + path + " <- " )
+            #print(data.val())
+            self.console.log("GET: %s -> %s" ,( path,str(data.val()) ) )
+        else:
+            self.console.log("GET: %s -> NO DATA" , path  )
         return data.val()
 
 

@@ -8,28 +8,33 @@ Don't blink...
 '''
 
 import pyrebase
+from Shared import Logger
 
 
 class Storage:
-    def __init__(self,options):
+    def __init__(self,options,logs=True):
+        self.console = Logger.Logger(logName='Storage', enabled=logs, printConsole=True)
         self.firebase = pyrebase.initialize_app(options)
         self.storage = self.firebase.storage()
+        self.console.log("Initialization...")
 
     def saveFile(self, path, file):
         self.storage.child(str(path)).put(file)
-        print("Saving: " + str(file) + " -> " + path )
+        # print("Saving: " + str(file) + " -> " + path )
+        self.console.log("Uploading: %s -> %s" ,(str(file),path) )
         url = self.storage.child(path).get_url(1)
-        print("URL: " + str(url) )
+        # print("URL: " + str(url) )
+        self.console.log("%s URL: %s", (path, url) )
         return url
 
     def downloadFile(self, path, file):
         self.storage.child(str(path)).download(file)
-        print("Downloading: " + path + " -> "  + str(file))
-
+        #print("Downloading: " + path + " -> "  + str(file))
+        self.console.log("Downloading: %s -> %s",(path,str(file)))
 
     def getUrl(self, path):
         url = self.storage.child(path).get_url(1)
-        print("URL: " + str(url) )
+        self.console.log("%s URL: %s", (path, url) )
         return url
 
 

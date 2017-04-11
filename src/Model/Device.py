@@ -8,9 +8,12 @@ Don't blink...
 from Sensor import Sensor
 import sys
 import datetime
+from Shared import Logger
 
 class Device:
-    def __init__(self, database, storage, id, type, version, enabled, basePath=""):
+    def __init__(self, database, storage, id, type, version, enabled, basePath="", logs=True, logName="Device"):
+        self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
+        self.console.log("Initialization...")
         self.db = database
         self.storage = storage
         self.id = id
@@ -34,6 +37,7 @@ class Device:
 
 
     def saveDeviceToDB(self):
+        self.console.log("Saving device data to database")
         data = self.getDeviceData()
         self.db.updateData(self.path,data)
         print("Device Saved")
@@ -41,6 +45,7 @@ class Device:
             self.sensors[sensorId].saveSensorToDB()
 
     def addSensor(self, sensorId, type, version, enabled):
+        self.console.log("Adding sensor(%s) %s ",(sensorId, type))
         self.sensors[sensorId] = Sensor(self, sensorId, type, version, enabled)
 
 
