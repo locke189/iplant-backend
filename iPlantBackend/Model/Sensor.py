@@ -14,7 +14,7 @@ from Shared import Logger
 from Broker import Broker
 
 class Sensor:
-    def __init__(self, device, sensorId, type, version, enabled,logs=True):
+    def __init__(self, device, sensorId, type, version, enabled,logs=True, maxSampleCount=5):
 
         self.db = device.db
         self.device = device
@@ -42,6 +42,10 @@ class Sensor:
         self.broker = Broker.Broker(topic=self.path, logs = True, logName=self.path)
         self.broker.setCallback(self.brokerCallback)
         self.broker.start()
+
+        #Sample counter
+        self.sampleCount = 0
+        self.maxSampleCount = maxSampleCount
 
     def brokerCallback(self, topic, payload):
         self.console.log("Broker callback")
@@ -83,6 +87,15 @@ class Sensor:
         #Running AVG filter implementation
         if self.filter:
             self.filterRun(data)
+
+        #maxSampleCount to updata dataset
+        if self.sampleCount == self.maxSampleCount:
+            self.datasetDataEntry()
+            self.saveSensorToDB()
+            self.sampleCount = 0
+        else:
+            self.sampleCount += 1
+
 
     #Sets the string that is going to be sent to the database
     def getSensorData(self):

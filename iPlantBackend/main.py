@@ -44,12 +44,9 @@ try:
         pass
 
 except Exception, e:
-    #print >> sys.stderr, 'Error exception!'
-    #print >> sys.stderr, str(e)
     console.log('ERROR: Exception')
     console.log('ERROR: "%s"', str(e) )
 
 finally:
     # Clean up the connection
-    #print >> sys.stderr, 'Error finally!'
     console.log("ERROR: CLEANUP")
