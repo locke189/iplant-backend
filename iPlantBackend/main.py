@@ -30,21 +30,21 @@ config = {
   "databaseURL": "https://testproject-cd274.firebaseio.com",
   "storageBucket": "testproject-cd274.appspot.com"
 }
-DB = Database.Database(config)
-store = Storage.Storage(config)
+#DB = Database.Database(config)
+#store = Storage.Storage(config)
 
 #create a device
-device = Device.Device(database=DB, storage=store, id="0", type="iplant", version="Beta", enabled=True)
+#device = Device.Device(database=DB, storage=store, id="0", type="iplant", version="Beta", enabled=True)
 
 #subscribe a sensor
-device.addSensor("0", "MST", "beta", True)
+#device.addSensor("0", "MST", "beta", True)
 
 #save device into db
-device.saveDeviceToDB()
+#device.saveDeviceToDB()
 
 #acivate filter run
 #update sensor data
-device.sensors["0"].filterEnable(30)
+#device.sensors["0"].filterEnable(30)
 
 # Listen for incoming connections
 
@@ -72,14 +72,14 @@ while True:
                 #print >>sys.stderr, 'Saving Data'
                 #update sensor data
                 console.log("Updating Sensor 0 data")
-                device.sensors["0"].updateData(data)
+                #device.sensors["0"].updateData(data)
 
-                if count == 30:
+                if count == 2:
                     #Save sensor data to DB
                     console.log("Saving Sensor 0 Dataset")
-                    device.sensors["0"].datasetDataEntry()
+                    #device.sensors["0"].datasetDataEntry()
                     console.log("Saving Sensor 0 data to DB")
-                    device.sensors["0"].saveSensorToDB()
+                    #device.sensors["0"].saveSensorToDB()
                     count = 0
                 else:
                     count += 1
