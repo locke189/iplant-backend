@@ -12,8 +12,6 @@ from Shared import Logger
 
 class Device:
     def __init__(self, database, storage, id, type, version, enabled, basePath="", logs=True, logName="Device"):
-        self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
-        self.console.log("Initialization...")
         self.db = database
         self.storage = storage
         self.id = id
@@ -23,6 +21,8 @@ class Device:
         self.sensors = {}
         self.actuators = {}
         self.path = basePath + "devices/" + str(self.id)
+        self.console = Logger.Logger(logName="Device("+self.path+")", enabled=logs, printConsole=True)
+        self.console.log("Initialization...")
 
     def getDeviceData(self):
         data = {

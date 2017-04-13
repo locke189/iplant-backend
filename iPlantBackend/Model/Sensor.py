@@ -11,12 +11,11 @@ import sys
 import datetime
 from DataLogger import DataLogger
 from Shared import Logger
-
+from Broker import Broker
 
 class Sensor:
-    def __init__(self, device, sensorId, type, version, enabled,logs=True,logName="Sensor"):
-        self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
-        self.console.log("Initialization...")
+    def __init__(self, device, sensorId, type, version, enabled,logs=True):
+
         self.db = device.db
         self.device = device
         self.id = sensorId
@@ -34,7 +33,19 @@ class Sensor:
         self.datasetAvg = []
         self.datasetLabel = []
         self.datasetMax = 48
+        #Initializaing logger
+        self.console = Logger.Logger(logName="Sensor("+self.path+")", enabled=logs, printConsole=True)
+        self.console.log("Initialization...")
+        #Initializing DataLogger
         self.dataLogger = DataLogger('sensorinit',self.device.storage,"/"+self.path+"/",self.device)
+        #Initializing broker
+        self.broker = Broker.Broker(topic=self.path, logs = True, logName=self.path)
+        self.broker.setCallback(self.brokerCallback)
+        self.broker.start()
+
+    def brokerCallback(self, topic, payload):
+        self.console.log("Broker callback")
+        self.updateData(int(payload))
 
     def getSensorDataFromDB(self):
         self.console.log("Getting sensor data from database")
@@ -65,7 +76,7 @@ class Sensor:
 
     #Update sensor data from device readings
     def updateData(self, data):
-        self.console.log("Updating raw sensor data")
+        self.console.log("Updating raw sensor data = %s", data)
         self.data = data
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -116,6 +127,8 @@ class Sensor:
         self.console.log("Logging dataset")
         self.dataLogger.newLogEntry(self.data, self.avgData, datetime.datetime.now().strftime("%H:%M"))
 
+    def onDestroy(self):
+        self.broker.stop()
 
 
 if __name__ == '__main__':

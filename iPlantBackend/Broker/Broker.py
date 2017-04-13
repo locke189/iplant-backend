@@ -19,7 +19,7 @@ class Broker:
 
     def __init__(self, topic="topic/channel", logs = True, logName='Broker'):
         self.mqttc = mqtt.Client()
-        self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
+        self.console = Logger.Logger(logName="Broker("+logName+")", enabled=logs, printConsole=True)
         self.console.log("Initialization...")
         self.callback = None
         self.rc = None
@@ -39,7 +39,7 @@ class Broker:
         def onConnect(anymqttc, userdata, rc):
             self.rc = rc
             self.console.log("Connecting... %s" , str(self.rc_code[self.rc]) )
-            self.mqttc.subscribe(topic="topic/channel", qos=self.qos)
+            self.mqttc.subscribe(topic=self.topic, qos=self.qos)
         return onConnect
 
     def _on_disconnect(self,mqttc, userdata, rc):
@@ -71,9 +71,11 @@ class Broker:
         self.mqttc.loop(timeout)
 
     def start(self):
+        self.console.log("Starting loop")
         self.mqttc.loop_start()
 
     def stop(self):
+        self.console.log("Stopping loop")
         self.mqttc.loop_stop()
         self.mqttc.disconnect()
 
