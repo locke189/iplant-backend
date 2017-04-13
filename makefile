@@ -1,5 +1,5 @@
 init:
-    python -m pip install -r requirements.txt
+    sudo python -m pip install -r requirements.txt
 
 test:
-    py.test tests
+    nosetests tests
