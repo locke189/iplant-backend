@@ -14,7 +14,7 @@ from Shared import Logger
 from Broker import Broker
 
 class Sensor:
-    def __init__(self, device, sensorId, type, version, enabled,logs=True, maxSampleCount=5):
+    def __init__(self, device, sensorId, type, version, enabled, dataTopic = "/data", logs=True, maxSampleCount=5):
 
         self.db = device.db
         self.device = device
@@ -32,14 +32,15 @@ class Sensor:
         self.dataset = []
         self.datasetAvg = []
         self.datasetLabel = []
-        self.datasetMax = 48
+        self.datasetMax = 2
         #Initializaing logger
         self.console = Logger.Logger(logName="Sensor("+self.path+")", enabled=logs, printConsole=True)
         self.console.log("Initialization...")
         #Initializing DataLogger
         self.dataLogger = DataLogger('sensorinit',self.device.storage,"/"+self.path+"/",self.device)
         #Initializing broker
-        self.broker = Broker.Broker(topic=self.path, logs = True, logName=self.path)
+        self.dataTopic = self.path + dataTopic
+        self.broker = Broker.Broker(topic=self.dataTopic, logs = True, logName=self.path)
         self.broker.setCallback(self.brokerCallback)
         self.broker.start()
 

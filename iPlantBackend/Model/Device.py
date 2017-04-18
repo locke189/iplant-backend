@@ -9,20 +9,53 @@ from Sensor import Sensor
 import sys
 import datetime
 from Shared import Logger
+from Broker import Broker
+import json
 
 class Device:
-    def __init__(self, database, storage, id, type, version, enabled, basePath="", logs=True, logName="Device"):
+    def __init__(self, database, storage, id, type, version, enabled, basePath="", topicSensor="/regSensor", topicActuator="/regActuator", logs=True, logName="Device"):
         self.db = database
         self.storage = storage
         self.id = id
         self.type = type
         self.version = version
-        self.enabled =enabled
+        self.enabled = enabled
         self.sensors = {}
         self.actuators = {}
         self.path = basePath + "devices/" + str(self.id)
         self.console = Logger.Logger(logName="Device("+self.path+")", enabled=logs, printConsole=True)
+        self.topicSensor = self.path + topicSensor
+        self.topicActuator = self.path + topicActuator
         self.console.log("Initialization...")
+        #Initializing broker
+        self.broker = Broker.Broker(topic=self.topicActuator, logs = True, logName=logName)
+        self.broker.setCallback(self.brokerCallback)
+        self.broker.start()
+        self.broker.subscribe(self.topicSensor)
+
+
+    def brokerCallback(self, topic, payload):
+        payload2 = payload.replace("'", '"')
+        self.console.log("Broker callback")
+        data  = json.loads(payload2)
+        self.console.log("Topic: %s", topic)
+        self.console.log("ID: %s, Type: %s", (data['id'], data['type']))
+
+        if (topic ==  self.topicActuator):
+            if ( data['id'] not in self.actuators.keys()):
+                self.console.log("New Actuator")
+            else:
+                self.console.log("Actuator already exists")
+
+        elif (topic ==  self.topicSensor):
+            if ( data['id'] not in self.sensors.keys()):
+                self.console.log("New Sensor")
+                self.addSensor(data['id'], data['type'], "beta", True)
+            else:
+                self.console.log("Sensor already exists")
+
+        self.saveDeviceToDB()
+
 
     def getDeviceData(self):
         data = {

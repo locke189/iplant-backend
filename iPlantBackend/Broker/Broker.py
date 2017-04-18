@@ -24,7 +24,7 @@ class Broker:
         self.callback = None
         self.rc = None
         self.topic = topic
-        self.qos = 0
+        self.qos = 1
         self.mqttc = mqtt.Client()
         self.mqttc.on_connect = self._on_connect()
         self.mqttc.on_disconnect = self._on_disconnect
@@ -32,8 +32,12 @@ class Broker:
         self.mqttc.on_subscribe = self._on_subscribe
         self.mqttc.on_unsubscribe = self._on_unsubscribe
         self.mqttc.on_publish = self._on_publish
+        self.mqttc.on_log = self._on_log
         self.mqttc.connect(host='localhost', port=1883)
 
+    def _on_log(self, client, userdata, level, buf):
+        #self.console.log("Log:  %s" , buf )
+        pass
 
     def _on_connect(self):
         def onConnect(anymqttc, userdata, rc):
@@ -69,6 +73,9 @@ class Broker:
 
     def startTimeout(timeout = 5.0):
         self.mqttc.loop(timeout)
+
+    def subscribe(self,topic):
+        self.mqttc.subscribe(topic=topic, qos=self.qos)
 
     def start(self):
         self.console.log("Starting loop")
