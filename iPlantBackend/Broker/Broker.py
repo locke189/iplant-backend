@@ -34,6 +34,7 @@ class Broker:
         self.mqttc.on_publish = self._on_publish
         self.mqttc.on_log = self._on_log
         self.mqttc.connect(host='localhost', port=1883)
+        self.callbackFunctions = {}
 
     def _on_log(self, client, userdata, level, buf):
         #self.console.log("Log:  %s" , buf )
@@ -43,7 +44,7 @@ class Broker:
         def onConnect(anymqttc, userdata, rc):
             self.rc = rc
             self.console.log("Connecting... %s" , str(self.rc_code[self.rc]) )
-            self.mqttc.subscribe(topic=self.topic, qos=self.qos)
+            #self.mqttc.subscribe(topic=self.topic, qos=self.qos)
         return onConnect
 
     def _on_disconnect(self,mqttc, userdata, rc):
@@ -59,14 +60,15 @@ class Broker:
             self.callback(msg.topic, msg.payload)
 
     def _on_subscribe(self, mqttc, userdata, mid, granted_qos):
-        self.console.log("Subscribed to ' %s '", self.topic)
+        self.console.log("Subscribed to '%s'", str(mid))
 
     def _on_unsubscribe(self, mqttc, userdata, mid, granted_qos):
-        self.console.log("Unsubscribed to ' %s '", self.topic)
+        self.console.log("Unsubscribed to '%s'", self.topic)
 
     def _on_publish(self, mqttc, userdata, mid):
         self.console.log("Message Published")
         #self.mqttc.disconnect()
+
 
     def setCallback( self, callback):
         self.callback = callback
@@ -88,6 +90,25 @@ class Broker:
 
     def publishMessage(self,topic,payload):
         self.mqttc.publish(topic=topic, payload=payload, qos=self.qos)
+
+
+    # This methods will serve to use only one client throughout the app
+
+    def _brokerCallback(self, topic, payload):
+        self.console.log("Broker callback")
+        self.console.log("Topic: %s", topic)
+
+        self.callbackFunctions[topic](topic, payload)
+
+    def subscribeTopicWithCallback(self,topic,callback):
+        self.console.log("Subscribing topic: %s", topic)
+        self.subscribe(topic)
+        self.callbackFunctions[topic] = callback
+
+    def setCallbacks(self):
+        self.setCallback(self._brokerCallback)
+
+
 
 
 if __name__ == '__main__':

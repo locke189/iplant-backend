@@ -9,18 +9,33 @@ from random import randint
 import time
 
 
-class TestDatabase(unittest.TestCase):
+class TestBroker(unittest.TestCase):
 
 
     #Database startup
     broker1 = Broker.Broker(topic="topic/channel", logs = False, logName='Broker1')
     broker2 = Broker.Broker(topic="topic/channel", logs = False, logName='Broker2')
+    broker3 = Broker.Broker(topic="topic/channel", logs = True, logName='Broker3')
+    broker1.subscribe(topic="topic/channel")
+    broker2.subscribe(topic="topic/channel")
     payload = randint(0,9)
+    payload2 = randint(0,9)
+    payload3 = randint(0,9)
     received_payload = ' '
 
     def iAmACallbackFunction(self, topic, payload):
         self.received_topic = topic
         self.received_payload = payload
+        self.broker1.stop()
+
+    def iAmACallbackFunction2(self, topic, payload):
+        self.received_topic = topic
+        self.received_payload2 = payload
+        self.broker1.stop()
+
+    def iAmACallbackFunction3(self, topic, payload):
+        self.received_topic = topic
+        self.received_payload3 = payload
         self.broker1.stop()
 
     def test_it_should_receive_message(self):
@@ -32,6 +47,22 @@ class TestDatabase(unittest.TestCase):
         time.sleep(5)
         self.broker1.stop()
         self.assertEqual(str(self.payload), self.received_payload)
+
+
+    def test_it_should_subscribe_to_multiple_topics(self):
+        self.broker3.subscribeTopicWithCallback("topic/channel2",self.iAmACallbackFunction2)
+        self.broker3.subscribeTopicWithCallback("topic/channel3",self.iAmACallbackFunction3)
+        self.broker3.setCallbacks()
+        self.broker3.start()
+        self.broker3.publishMessage("topic/channel2",self.payload2)
+        time.sleep(2)
+        self.broker3.publishMessage("topic/channel3",self.payload3)
+        time.sleep(2)
+        self.broker3.stop()
+        self.assertEqual(str(self.payload2), self.received_payload2)
+        self.assertEqual(str(self.payload3), self.received_payload3)
+        pass
+
 
 if __name__ == '__main__':
     #suite = unittest.TestLoader().loadTestsFromTestCase(TestDatabase)
