@@ -15,7 +15,7 @@ class TestBroker(unittest.TestCase):
     #Database startup
     broker1 = Broker.Broker(topic="topic/channel", logs = False, logName='Broker1')
     broker2 = Broker.Broker(topic="topic/channel", logs = False, logName='Broker2')
-    broker3 = Broker.Broker(topic="topic/channel", logs = True, logName='Broker3')
+    broker3 = Broker.Broker(topic="topic/channel", logs = False, logName='Broker3')
     broker1.subscribe(topic="topic/channel")
     broker2.subscribe(topic="topic/channel")
     payload = randint(0,9)
