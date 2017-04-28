@@ -16,6 +16,7 @@ class Database:
         self.console.log("Initialization...")
         self.firebase = pyrebase.initialize_app(options)
         self.db = self.firebase.database()
+        self.streams = {}
 
     def setData(self, path, data):
         self.db.child(path).set(data)
@@ -42,6 +43,13 @@ class Database:
             self.console.log("GET: %s -> NO DATA" , path  )
         return data.val()
 
+    def setStream(self, path, function):
+        self.console.log("Streaming: %s " , path )
+        self.streams[path] = self.db.child(path).stream(function)
+
+    def closeStream(self, path):
+        self.console.log("Closing stream: %s " , path )
+        self.streams[path].close()
 
 
 if __name__ == '__main__':

@@ -15,8 +15,6 @@ class Broker:
         5: "Connection refused - not authorised",
     }
 
-
-
     def __init__(self, topic="topic/channel", logs = True, logName='Broker'):
         self.mqttc = mqtt.Client()
         self.console = Logger.Logger(logName="Broker("+logName+")", enabled=logs, printConsole=True)
@@ -57,7 +55,7 @@ class Broker:
     def _on_message(self, mqttc, userdata, msg):
         self.console.log("Message Received. topic: ' %s ', qos: ' %s ', message: ' %s '", (msg.topic, msg.qos, msg.payload))
         if self.callback:
-            self.callback(msg.topic, msg.payload)
+            self.callback(msg.topic, msg.payload.decode('utf-8') )
 
     def _on_subscribe(self, mqttc, userdata, mid, granted_qos):
         self.console.log("Subscribed to '%s'", str(mid))
@@ -108,7 +106,9 @@ class Broker:
     def setCallbacks(self):
         self.setCallback(self._brokerCallback)
 
-
+    #Destructor
+    def __del__(self):
+        self.mqttc.disconnect()
 
 
 if __name__ == '__main__':

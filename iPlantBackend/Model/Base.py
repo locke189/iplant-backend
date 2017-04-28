@@ -9,7 +9,7 @@ Don't blink...
 
 import sys
 import datetime
-from DataLogger import DataLogger
+from Model import DataLogger
 from Shared import Logger
 from Broker import Broker
 
@@ -22,6 +22,7 @@ class Base:
         self.enabled = enabled
         self.path = devicePath + categoryPath + str(self.id)
         self.timestamp = ""
+        self.streams = []
 
         #Data related
         self.data = "";
@@ -40,13 +41,36 @@ class Base:
     def subscribeDataTopic(self):
         self.broker.subscribeTopicWithCallback(self.dataTopic, self.setData )
 
+
     def setData(self, topic, payload):
         self.console.log("set data method")
         self.data = payload
 
+
+
+
+    #streaming methods
+    def streamFromDB(self, property, callback):
+        self.db.setStream(self.path +"/"+ property, callback)
+        self.streams.append(self.path +"/"+ property)
+
+    def closeStreams(self):
+        while (self.streams != [] ):
+            stream = self.streams.pop()
+            self.db.closeStream(stream)
+
+    def changeEnabledStateFromDB(self, message):
+        if isinstance(message["data"], bool) :
+            self.console.log("Enabled: %s",str(message["data"]))
+            self.enable = message["data"]
+        else:
+            self.console.log("Cannot change enabled state: %s is not bool", str(message["data"]))
+
     def loadDataFromDB(self):
         self.console.log("Getting data from database")
         return self.db.getData(self.path)
+
+
 
     #Sets the string that is going to be sent to the database
     def getDataDictionary(self):
@@ -70,12 +94,11 @@ class Base:
         self.console.log("Loading data from database")
         data = self.db.updateData(self.path,data)
 
+    def __del__(self):
+        self.closeStreams()
+        pass
 
 
 if __name__ == '__main__':
-
-
-
-
     # Main Loop
     pass

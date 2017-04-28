@@ -20,7 +20,7 @@ config = {
 #Database startup
 db = Database.Database(config,logs=True)
 
-broker = Broker.Broker(topic="topic/channel", logs = True, logName='baseBroker')
+broker = Broker.Broker(topic="topic/channel", logs = False, logName='baseBroker')
 broker.setCallbacks()
 broker.start()
 
@@ -36,12 +36,13 @@ class TestBaseClass(unittest.TestCase):
 
     #Database startup
     base = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=True, maxSampleCount=5)
+    base2 = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=False, maxSampleCount=5)
 
     def test_it_should_save_data_from_database(self):
         self.base.data = randint(0,9)
         self.localData = self.base.getDataDictionary()
         self.base.saveDataToDB(self.localData)
-        time.sleep(2)
+        time.sleep(1)
         self.databaseData = self.base.loadDataFromDB()
         self.assertEqual(self.localData, self.databaseData)
         self.assertEqual(self.localData["data"],self.databaseData["data"])
@@ -50,19 +51,20 @@ class TestBaseClass(unittest.TestCase):
 
     def test_it_should_save_data_from_broker_messages(self):
         self.sent_payload = randint(0,9)
-        self.base.subscribeDataTopic()
-
+        self.base2.subscribeDataTopic()
         broker.publishMessage("/devices/id/category/100/data", self.sent_payload)
-        time.sleep(2)
-        self.assertEqual(str(self.sent_payload), self.base.data)
-        pass
-
-    def test_it_should_receive_data_from_broker_ping(self):
-        self.assertEqual(str(self.sent_payload), self.received_payload)
+        time.sleep(1)
+        self.assertEqual(str(self.sent_payload), self.base2.data)
         pass
 
     def test_it_should_detect_enabled_changes_from_db(self):
-        self.assertEqual(self.base.enabled, self.changedEnabledState )
+        self.base.streamFromDB("enabled", self.base.changeEnabledStateFromDB)
+        self.sent_enable = not(self.base.enabled)
+        db.setData(self.base.path + "/enabled", self.sent_enable)
+        time.sleep(1)
+        self.base.closeStreams()
+
+        self.assertEqual(self.base.enable, self.sent_enable )
         pass
 
 
