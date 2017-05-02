@@ -18,7 +18,7 @@ config = {
   "storageBucket": " testproject-cd274.appspot.com"
 }
 #Database startup
-db = Database.Database(config,logs=True)
+db = Database.Database(config,logs=False)
 
 broker = Broker.Broker(topic="topic/channel", logs = False, logName='baseBroker')
 broker.setCallbacks()
@@ -35,8 +35,8 @@ class TestBaseClass(unittest.TestCase):
 
 
     #Database startup
-    base = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=True, maxSampleCount=5)
-    base2 = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=False, maxSampleCount=5)
+    base = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=False )
+    base2 = Base.Base(database = db, broker= broker, id=100, type="TST", enabled=True, devicePath="/devices/id", categoryPath="/category/", dataTopic = "/data", logs=False)
 
     def test_it_should_save_data_from_database(self):
         self.base.data = randint(0,9)
@@ -65,6 +65,32 @@ class TestBaseClass(unittest.TestCase):
         self.base.closeStreams()
 
         self.assertEqual(self.base.enable, self.sent_enable )
+        pass
+
+    def test_it_should_periodically_update_db(self):
+        #Sets updates to 2 seconds
+        self.base.setUptateTime(2)
+        self.base.setPeriodicDBUpdates()
+        #Sets new Data
+        self.base.data = randint(0,9)
+        self.localData = self.base.getDataDictionary()
+        #data should automatically be saved to DB
+        time.sleep(3)
+        #is new data equal to DB data?
+        self.databaseData = self.base.loadDataFromDB()
+        self.assertEqual(self.localData["data"],self.databaseData["data"])
+
+        #Sets new Data
+        self.base.data = randint(0,9)
+        self.localData = self.base.getDataDictionary()
+        #data should automatically be saved to DB
+        time.sleep(3)
+        #is new data equal to DB data?
+        self.databaseData = self.base.loadDataFromDB()
+        self.assertEqual(self.localData["data"],self.databaseData["data"])
+
+        #stoppping periodic updates
+        self.base.stopPeriodicDBUpdates()
         pass
 
 

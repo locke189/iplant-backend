@@ -9,107 +9,76 @@ Don't blink...
 
 import sys
 import datetime
-from DataLogger import DataLogger
+from Model import DataLogger
 from Shared import Logger
 from Broker import Broker
+from Model import Base
+from Model import AvgFilter
 
-class Sensor:
-    def __init__(self, device, sensorId, type, version, enabled, dataTopic = "/data", logs=True, maxSampleCount=5):
+class Sensor(Base.Base):
 
-        self.db = device.db
-        self.device = device
-        self.id = sensorId
-        self.type = type
-        self.version = version
-        self.enabled = enabled
-        self.path = device.path + "/sensors/" + str(self.id)
-        self.timestamp = ""
-        self.avgData = ""
-        self.filter = False
-        self.filterSamples = ""
-        self.storageRoute = "/" + str(self.device.id) + "/" + self.id + "/"
-        self.data = ""
+    def __init__(self, database, storage, broker, id, type, enabled, devicePath, logs=True, filterSamples=5, datasetLength = 10, skipSamples=10):
+
+        #Initializing Base class
+        super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensor/", logs = logs)
+        self.subscribeDataTopic()
+
+        #datasets
         self.dataset = []
         self.datasetAvg = []
         self.datasetLabel = []
-        self.datasetMax = 2
-        #Initializaing logger
-        self.console = Logger.Logger(logName="Sensor("+self.path+")", enabled=logs, printConsole=True)
-        self.console.log("Initialization...")
-        #Initializing DataLogger
-        self.dataLogger = DataLogger('sensorinit',self.device.storage,"/"+self.path+"/",self.device)
-        #Initializing broker
-        self.dataTopic = self.path + dataTopic
-        self.broker = Broker.Broker(topic=self.dataTopic, logs = True, logName=self.path)
-        self.broker.setCallback(self.brokerCallback)
-        self.broker.start()
+        self.datasetLength = datasetLength
 
-        #Sample counter
+        #Skip samples
+        self.skipSamples = skipSamples
         self.sampleCount = 0
-        self.maxSampleCount = maxSampleCount
-
-    def brokerCallback(self, topic, payload):
-        self.console.log("Broker callback")
-        self.updateData(int(payload))
-
-    def getSensorDataFromDB(self):
-        self.console.log("Getting sensor data from database")
-        self.db.getData()
 
 
-    #Running AVG filter implementation
-    def filterEnable(self, samples):
-        self.console.log("Enabling AVG filter - %s samples", (samples))
-        self.filter = True
-        self.filterSamples = samples
-        self.filterData = [0] * self.filterSamples
-        self.avgData = 0
+        #Initializing filter
+        self.avgFilter = AvgFilter.AvgFilter(path=self.path, logs=logs)
+        self.avgFilter.enable(filterSamples)
 
-    def filterRun(self, data):
-        self.console.log("Filtering")
-        self.filterData.pop()
-        self.filterData.insert(0,int(data))
-        self.avgData = sum(self.filterData)/self.filterSamples
+        #Initializing DataLogger
+        self.dataLogger = DataLogger.DataLogger(initFile='sensorinit', storage=storage ,storageRoute=self.path+"/", logs=logs)
 
 
-    def filterDisable(self):
-        self.console.log("AVG Filter disabled")
-        self.filter = False
-        self.avgData = ""
-        self.filterSamples = ""
 
 
-    #Update sensor data from device readings
-    def updateData(self, data):
-        self.console.log("Updating raw sensor data = %s", data)
-        self.data = data
-        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #-------------------------------------------------------------------------
+    # Filtering methods
+    # The following methods should deal with data comming in from the sensors.
+    # The main idea is that there is going to be an array of data, one for
+    # average data, and one array for labels to indicate when the data ways
+    # taken.
 
+
+    # Overide of setData method to include update of filters and labels
+    def setData(self, topic, payload):
+        super().setData(topic,payload)
         #Running AVG filter implementation
-        if self.filter:
-            self.filterRun(data)
+        if self.avgFilter.isEnabled():
+            self.avgFilter.run(self.data)
 
         #maxSampleCount to updata dataset
-        if self.sampleCount == self.maxSampleCount:
+        if self.sampleCount >= self.skipSamples:
+            self.saveDataToDB()
             self.datasetDataEntry()
-            self.saveSensorToDB()
             self.sampleCount = 0
         else:
             self.sampleCount += 1
 
 
     #Sets the string that is going to be sent to the database
-    def getSensorData(self):
+    def getDataDictionary(self):
         data = {
             "id": self.id,
             "type": self.type,
-            "version": self.version,
             "enabled": self.enabled,
             "data":  self.data,
             "timestamp": self.timestamp,
-            "filter": self.filter,
-            "avgData": self.avgData,
-            "filterSamples": self.filterSamples,
+            "filter": self.avgFilter.isEnabled(),
+            "avgData": self.avgFilter.getValue(),
+            "filterSamples": self.avgFilter.filterSamples,
             "dataset": self.dataset,
             "datasetAvg": self.datasetAvg,
             "datasetLabel": self.datasetLabel,
@@ -117,16 +86,18 @@ class Sensor:
             }
         return data
 
-    #Updates data into the Database
-    def saveSensorToDB(self):
-        self.console.log("Saving sensor data to database")
-        data = self.getSensorData()
-        self.db.updateData(self.path,data)
-
+    #-----------------------------------------------------------------------
+    # Dataset Methods:
+    # The purpose of datasets is to give the frontend a portion of historic
+    # sensor data in order to plot some charts. datasets are actually buffers
+    # so we discard the oldest entry as soon as new data gets in and the
+    # buffer is full.
+    # Historic data is saved via dataLogger class. The idea is to save the
+    # same data that goes into the dataset to the historic.
 
     def datasetDataEntry(self):
 
-        if(len(self.dataset) == self.datasetMax):
+        if(len(self.dataset) == self.datasetLength):
             self.console.log("Saving sensor data to dataset (discarding old data)")
             self.datasetAvg.pop(0)
             self.dataset.pop(0)
@@ -134,15 +105,13 @@ class Sensor:
         else:
             self.console.log("Saving sensor data to dataset")
 
-        self.datasetAvg.append(self.avgData)
+        self.datasetAvg.append( self.avgFilter.getValue() )
         self.dataset.append(self.data)
         self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
 
         self.console.log("Logging dataset")
-        self.dataLogger.newLogEntry(self.data, self.avgData, datetime.datetime.now().strftime("%H:%M"))
+        self.dataLogger.newLogEntry(self.data, self.avgFilter.getValue() , datetime.datetime.now().strftime("%H:%M"))
 
-    def onDestroy(self):
-        self.broker.stop()
 
 
 if __name__ == '__main__':
