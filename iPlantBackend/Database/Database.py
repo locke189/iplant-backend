@@ -51,6 +51,8 @@ class Database:
         self.console.log("Closing stream: %s " , path )
         self.streams[path].close()
 
+    def __del__(self):
+        pass
 
 if __name__ == '__main__':
     #initial setup

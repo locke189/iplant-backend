@@ -24,7 +24,7 @@ class TestStorage(unittest.TestCase):
     }
 
     #Database startup
-    storage = Storage.Storage(config,logs=True)
+    storage = Storage.Storage(config,logs=False)
 
 
     #TestData

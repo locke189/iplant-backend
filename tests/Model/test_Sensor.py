@@ -25,7 +25,7 @@ db = Database.Database(config,logs=False)
 #storage startup
 store = Storage.Storage(config, logs=False)
 
-broker = Broker.Broker(topic="topic/channel", logs = True, logName='SensorBroker')
+broker = Broker.Broker(topic="topic/channel", logs = False, logName='SensorBroker')
 broker.setCallbacks()
 broker.start()
 
@@ -40,7 +40,7 @@ class TestSensorClass(unittest.TestCase):
 
 
     #Database startup
-    sensor = Sensor.Sensor(database = db, storage = store, broker= broker, id=200, type="TST", enabled=True, devicePath="/devices/id", logs=True, filterSamples=3, datasetLength = 3, skipSamples=2)
+    sensor = Sensor.Sensor(database = db, storage = store, broker= broker, id=200, type="TST", enabled=True, devicePath="/devices/id", logs=False, filterSamples=3, datasetLength = 3, skipSamples=2)
 
 
     def test_it_should_filter_data_from_sensors(self):
@@ -48,9 +48,9 @@ class TestSensorClass(unittest.TestCase):
         y = randint(0,9)
         z = randint(0,9)
         average = floor( (x+y+z)/3 )
-        broker.publishMessage("/devices/id/sensor/200/data", x)
-        broker.publishMessage("/devices/id/sensor/200/data", y)
-        broker.publishMessage("/devices/id/sensor/200/data", z)
+        broker.publishMessage("/devices/id/sensors/200/data", x)
+        broker.publishMessage("/devices/id/sensors/200/data", y)
+        broker.publishMessage("/devices/id/sensors/200/data", z)
         time.sleep(2)
         self.assertEqual(average, floor(self.sensor.avgFilter.getValue()) )
 
@@ -58,9 +58,9 @@ class TestSensorClass(unittest.TestCase):
         y = 6
         z = 3
         average = 4
-        broker.publishMessage("/devices/id/sensor/200/data", x)
-        broker.publishMessage("/devices/id/sensor/200/data", y)
-        broker.publishMessage("/devices/id/sensor/200/data", z)
+        broker.publishMessage("/devices/id/sensors/200/data", x)
+        broker.publishMessage("/devices/id/sensors/200/data", y)
+        broker.publishMessage("/devices/id/sensors/200/data", z)
         time.sleep(2)
         self.assertEqual(average, floor(self.sensor.avgFilter.getValue()) )
         pass

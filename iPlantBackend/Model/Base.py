@@ -28,6 +28,7 @@ class Base:
         self.timestamp = ""
         self.streams = []
 
+
         self.timerInterval = 5 #seconds
         self.periodicUpdates = False
 
@@ -43,6 +44,7 @@ class Base:
         self.broker = broker
         #self.broker.setCallback(self.brokerCallback)
         #self.broker.start()
+
 
     #-------------------------------------------------------------
     #Broker Methods:

@@ -20,7 +20,7 @@ class Sensor(Base.Base):
     def __init__(self, database, storage, broker, id, type, enabled, devicePath, logs=True, filterSamples=5, datasetLength = 10, skipSamples=10):
 
         #Initializing Base class
-        super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensor/", logs = logs)
+        super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensors/", logs = logs)
         self.subscribeDataTopic()
 
         #datasets
