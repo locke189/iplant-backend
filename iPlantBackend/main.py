@@ -46,7 +46,7 @@ try:
     while True:
         pass
 
-except Exception, e:
+except Exception as e:
     console.log('ERROR: Exception')
     console.log('ERROR: "%s"', str(e) )
 

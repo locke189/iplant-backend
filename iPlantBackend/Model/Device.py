@@ -5,7 +5,8 @@ Created on Nov 7, 2015
 Don't blink...
 @author: Juan_Insuasti
 '''
-from Sensor import Sensor
+from Model import Sensor
+from Model import Actuator
 import sys
 import datetime
 from Shared import Logger
@@ -13,25 +14,24 @@ from Broker import Broker
 import json
 
 class Device:
-    def __init__(self, database, storage, id, type, version, enabled, basePath="", topicSensor="/regSensor", topicActuator="/regActuator", logs=True, logName="Device"):
+    def __init__(self, database, storage, id, type, broker, enabled, basePath="", topicSensor="/regSensor", topicActuator="/regActuator", logs=True, logName="Device"):
         self.db = database
         self.storage = storage
         self.id = id
         self.type = type
-        self.version = version
         self.enabled = enabled
         self.sensors = {}
         self.actuators = {}
-        self.path = basePath + "devices/" + str(self.id)
+        self.path = basePath + "/devices/" + str(self.id)
         self.console = Logger.Logger(logName="Device("+self.path+")", enabled=logs, printConsole=True)
         self.topicSensor = self.path + topicSensor
         self.topicActuator = self.path + topicActuator
         self.console.log("Initialization...")
         #Initializing broker
-        self.broker = Broker.Broker(topic=self.topicActuator, logs = True, logName=logName)
-        self.broker.setCallback(self.brokerCallback)
-        self.broker.start()
-        self.broker.subscribe(self.topicSensor)
+        self.broker = broker
+        self.broker.subscribeTopicWithCallback(self.topicSensor, self.brokerCallback )
+        self.broker.subscribeTopicWithCallback(self.topicActuator, self.brokerCallback )
+
 
 
     def brokerCallback(self, topic, payload):
@@ -44,13 +44,14 @@ class Device:
         if (topic ==  self.topicActuator):
             if ( data['id'] not in self.actuators.keys()):
                 self.console.log("New Actuator")
+                self.addActuator(data['id'], data['type'], True)
             else:
                 self.console.log("Actuator already exists")
 
         elif (topic ==  self.topicSensor):
             if ( data['id'] not in self.sensors.keys()):
                 self.console.log("New Sensor")
-                self.addSensor(data['id'], data['type'], "beta", True)
+                self.addSensor(data['id'], data['type'], True)
             else:
                 self.console.log("Sensor already exists")
 
@@ -61,7 +62,6 @@ class Device:
         data = {
             "id": self.id,
             "type": self.type,
-            "version": self.version,
             "enabled": self.enabled,
             "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
             }
@@ -75,11 +75,18 @@ class Device:
         self.db.updateData(self.path,data)
         print("Device Saved")
         for sensorId in self.sensors.keys():
-            self.sensors[sensorId].saveSensorToDB()
+            self.sensors[sensorId].saveDataToDB()
+        for actuatorId in self.actuators.keys():
+            self.actuators[actuatorId].saveDataToDB()
 
-    def addSensor(self, sensorId, type, version, enabled):
+    def addSensor(self, sensorId, type, enabled):
         self.console.log("Adding sensor(%s) %s ",(sensorId, type))
-        self.sensors[sensorId] = Sensor(self, sensorId, type, version, enabled)
+        self.sensors[sensorId] = Sensor.Sensor(database=self.db, storage=self.storage, broker = self.broker, id=sensorId, type=type, enabled=enabled, devicePath= self.path, datasetLength = 24, skipSamples=60)
+
+    def addActuator(self, actuatorId, type, enabled):
+        self.console.log("Adding Actuator(%s) %s ",(actuatorId, type))
+        self.actuators[actuatorId] = Actuator.Actuator(database=self.db, broker = self.broker, id=actuatorId, type=type, enabled=enabled, devicePath= self.path)
+
 
 
 

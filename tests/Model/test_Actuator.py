@@ -25,9 +25,9 @@ def iAmACallbackFunction(topic, payload):
     time.sleep(2)
 
 #Database startup
-db = Database.Database(config,logs=True)
+db = Database.Database(config,logs=False)
 
-broker = Broker.Broker(topic="topic/channel", logs = True, logName='ActuatorBroker')
+broker = Broker.Broker(topic="topic/channel", logs = False, logName='ActuatorBroker')
 broker.setCallbacks()
 broker.start()
 broker.subscribeTopicWithCallback("/devices/id/actuators/300/actions", iAmACallbackFunction)
@@ -38,7 +38,7 @@ class TestActuatorClass(unittest.TestCase):
 
 
     #Database startup
-    actuator = Actuator.Actuator(database = db, broker= broker, id=300, type="TST", enabled=True, devicePath="/devices/id", logs=True)
+    actuator = Actuator.Actuator(database = db, broker= broker, id=300, type="TST", enabled=True, devicePath="/devices/id", logs=False)
 
 
     def test_it_should_detect_changes_in_enabled_from_db(self):

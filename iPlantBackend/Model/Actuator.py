@@ -14,6 +14,7 @@ from Shared import Logger
 from Broker import Broker
 from Model import Base
 import threading
+import time
 
 class Actuator(Base.Base):
 
@@ -88,7 +89,7 @@ class Actuator(Base.Base):
             if(self.retry < self.maxRetry):
                 self.retry += 1
                 self.console.log("Sending message attempt %s", self.retry)
-                self.broker.publishMessage(self.path + "/actions", self.message)
+                self.broker.publishMessage(self.path, self.message)
                 self.timer = threading.Timer(self.retryTime, self.publishAndRetry).start()
             elif self.busy and self.retry >= self.maxRetry:
                 self.console.log("TIMEOUT: maximum attemps reached")

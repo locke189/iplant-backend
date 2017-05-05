@@ -23,8 +23,9 @@ class DeviceManager:
         self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
         #Initializing broker
         self.broker = Broker.Broker(topic=topic, logs = True, logName=logName)
-        self.broker.setCallback(self.brokerCallback)
+        self.broker.setCallbacks()
         self.broker.start()
+        self.broker.subscribeTopicWithCallback(topic, self.brokerCallback )
         self.db = database
         self.storage = storage
 
@@ -36,9 +37,11 @@ class DeviceManager:
         self.console.log("Data: %s", data)
         self.console.log("Device ID: %s, Type: %s", (data['id'], data['type']))
 
-        if ( filter(lambda device: device.id == data['id'], self.devices) == []):
+        print( list(filter(lambda device: device.id == data['id'], self.devices) ))
+
+        if ( list(filter(lambda device: device.id == data['id'], self.devices)) == []):
             self.console.log("New Device")
-            self.devices.append( Device.Device(database=self.db, storage=self.storage, id=data['id'], type=data['type'], version="Beta", enabled=True))
+            self.devices.append( Device.Device(database=self.db, storage=self.storage, id=data['id'], type=data['type'], broker = self.broker, enabled=True))
         else:
             self.console.log("Device already exists")
 
