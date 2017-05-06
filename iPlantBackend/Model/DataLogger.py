@@ -13,7 +13,7 @@ import json
 from Shared import Logger
 
 class DataLogger:
-    def __init__(self, initFile, storage, storageRoute,device, logPrefix = "", logs = True,logName='Data Logger'):
+    def __init__(self, initFile, storage, storageRoute, logPrefix = "", logs = True,logName='Data Logger'):
         self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
         self.console.log("Initialization...")
         self.initFile = initFile
@@ -22,7 +22,6 @@ class DataLogger:
         self.storageRoute = str(storageRoute)
         self.logPrefix = logPrefix
         self.logData = {} #Actual data of a log
-        self.device = device
         self.openInitFile()
 
 
@@ -79,7 +78,9 @@ class DataLogger:
         self.console.log("Uploading log file to storage.")
         filepath = str(self.getFilePath(file))
         path = self.storageRoute + filepath
-        url = self.device.storage.saveFile(path,filepath)
+
+        self.console.log("Filepath = %s", path)
+        url = self.storage.saveFile(path,filepath)
         return url
 
     #gets data from storage
@@ -87,7 +88,7 @@ class DataLogger:
         self.console.log("Downloading log file from storage.")
         filepath = str(self.getFilePath(file))
         path = self.storageRoute + filepath
-        url = self.device.storage.downloadFile(path,filepath)
+        url = self.storage.downloadFile(path,filepath)
         return url
 
     def createNewLog(self, logFile):

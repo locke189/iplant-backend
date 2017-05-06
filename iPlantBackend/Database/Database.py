@@ -11,38 +11,53 @@ import pyrebase
 from Shared import Logger
 
 class Database:
-    def __init__(self,options,logs = True):
+    def __init__(self,options,logs = True, debug=False):
         self.console = Logger.Logger(logName='Database', enabled=logs, printConsole=True)
         self.console.log("Initialization...")
         self.firebase = pyrebase.initialize_app(options)
         self.db = self.firebase.database()
+        self.debug = debug
+        self.streams = {}
 
     def setData(self, path, data):
+        self.console.log("Database SET")
         self.db.child(path).set(data)
-        #print("SET: " + path + " -> " + str(data) )
-        self.console.log("SET: %s -> %s" ,( path,str(data) ) )
+        if self.debug:
+            self.console.log("SET: %s -> %s" ,( path,str(data) ) )
 
     def updateData(self, path, data):
+        self.console.log("Database UPDATE")
         self.db.child(path).update(data)
-        #print("UPDATE: " + path + " -> " + str(data) )
-        self.console.log("UPDATE: %s -> %s" ,( path,str(data) ) )
+        if self.debug:
+            self.console.log("UPDATE: %s -> %s" ,( path,str(data) ) )
 
     def pushData(self, path, data):
+        self.console.log("Database PUSH")
         self.db.child(path).push(data)
-        #print("PUSH: " + path + " -> " + str(data) )
-        self.console.log("PUSH: %s -> %s" ,( path,str(data) ) )
+        if self.debug:
+            self.console.log("PUSH: %s -> %s" ,( path,str(data) ) )
 
     def getData(self, path):
+        self.console.log("Database GET")
         data = self.db.child(path).get()
         if (data != None):
-            #print("GET: " + path + " <- " )
-            #print(data.val())
-            self.console.log("GET: %s -> %s" ,( path,str(data.val()) ) )
+            if self.debug:
+                self.console.log("GET: %s -> %s" ,( path,str(data.val()) ) )
         else:
-            self.console.log("GET: %s -> NO DATA" , path  )
+            if self.debug:
+                self.console.log("GET: %s -> NO DATA" , path  )
         return data.val()
 
+    def setStream(self, path, function):
+        self.console.log("Streaming: %s " , path )
+        self.streams[path] = self.db.child(path).stream(function)
 
+    def closeStream(self, path):
+        self.console.log("Closing stream: %s " , path )
+        self.streams[path].close()
+
+    def __del__(self):
+        pass
 
 if __name__ == '__main__':
     #initial setup

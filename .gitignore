@@ -1,4 +1,4 @@
-*.txt
 *.pyc
 *.json
 *.log
+iPlant_Backend.egg-info/

@@ -12,25 +12,33 @@ from Shared import Logger
 
 
 class Storage:
-    def __init__(self,options,logs=True):
+    def __init__(self,options,logs=True, debug=False):
         self.console = Logger.Logger(logName='Storage', enabled=logs, printConsole=True)
         self.firebase = pyrebase.initialize_app(options)
         self.storage = self.firebase.storage()
         self.console.log("Initialization...")
+        self.debug = debug
 
     def saveFile(self, path, file):
-        self.storage.child(str(path)).put(file)
-        # print("Saving: " + str(file) + " -> " + path )
         self.console.log("Uploading: %s -> %s" ,(str(file),path) )
+        info = self.storage.child(str(path)).put(file)
+        # print("Saving: " + str(file) + " -> " + path )
+        if self.debug:
+            self.console.log("Uploading: %s ",(str(info)) )
+
         url = self.storage.child(path).get_url(1)
         # print("URL: " + str(url) )
         self.console.log("%s URL: %s", (path, url) )
+
         return url
 
     def downloadFile(self, path, file):
-        self.storage.child(str(path)).download(file)
+        info = self.storage.child(str(path)).download(file)
         #print("Downloading: " + path + " -> "  + str(file))
         self.console.log("Downloading: %s -> %s",(path,str(file)))
+        if self.debug:
+            self.console.log("Downloading: %s ",(str(info)) )
+
 
     def getUrl(self, path):
         url = self.storage.child(path).get_url(1)

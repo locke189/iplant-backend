@@ -1,5 +1,6 @@
 init:
-    python -m pip install -r requirements.txt
+    sudo python -m pip install -r requirements.txt
+		sudo apt-get install mosquitto
 
 test:
-    py.test tests
+    nosetests tests

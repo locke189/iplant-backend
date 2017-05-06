@@ -1,1 +1,3 @@
 pyrebase
+nose2
+paho-mqtt

@@ -37,7 +37,7 @@ class Logger:
 
     def printLog(self, record):
         if(self.printConsole):
-            print >>sys.stderr, record
+            print(record, file=sys.stderr)
 
     def saveRecord(self, record):
         if(self.saveFile):
