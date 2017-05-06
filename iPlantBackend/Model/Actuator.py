@@ -20,6 +20,7 @@ class Actuator(Base.Base):
 
     actions = { "OFF":      0,
                 "ON":       1,
+                "TOGGLE":   2,
                 "ERROR":    False,
                 "IDLE":     False}
 

@@ -13,11 +13,12 @@ import json
 from Shared import Logger
 from Model import Device
 from Broker import Broker
+import threading
 
 
 class DeviceManager:
 
-    def __init__(self, database, storage, topic="regDevice",logs=True, logName="DeviceManager"):
+    def __init__(self, database, storage, topic="regDevice",logs=True, logName="DeviceManager", pingTimer = 600, pingPath='ping'):
         self.devices = []
         #Initializing loger
         self.console = Logger.Logger(logName=logName, enabled=logs, printConsole=True)
@@ -28,9 +29,15 @@ class DeviceManager:
         self.broker.subscribeTopicWithCallback(topic, self.brokerCallback )
         self.db = database
         self.storage = storage
+        self.pingPath = pingPath
+        self.pingTimer = pingTimer
+        self.timerInterval = 30
+        self.response = False
+        self.callPing()
 
 
     def brokerCallback(self, topic, payload):
+        self.response = True
         payload2 = payload.replace("'", '"')
         self.console.log("Broker callback")
         data  = json.loads(payload2)
@@ -44,6 +51,22 @@ class DeviceManager:
             self.devices.append( Device.Device(database=self.db, storage=self.storage, id=data['id'], type=data['type'], broker = self.broker, enabled=True))
         else:
             self.console.log("Device already exists")
+
+        threading.Timer(self.pingTimer, self.callLongPing).start()
+
+    def callPing(self):
+        
+        if not self.response:
+            self.console.log("Sending PING message...")
+            self.broker.publishMessage(self.pingPath, '0')
+            threading.Timer(self.timerInterval, self.callPing).start()
+
+
+    def callLongPing(self):
+        self.response = False
+        self.console.log("Sending PING message...")
+        self.broker.publishMessage(self.pingPath, '0')
+        threading.Timer(self.timerInterval, self.callPing).start()
 
 
 if __name__ == '__main__':

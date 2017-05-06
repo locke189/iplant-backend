@@ -17,7 +17,7 @@ from Model import AvgFilter
 
 class Sensor(Base.Base):
 
-    def __init__(self, database, storage, broker, id, type, enabled, devicePath, logs=True, filterSamples=5, datasetLength = 10, skipSamples=10):
+    def __init__(self, database, storage, broker, id, type, enabled, devicePath, logs=True, filterSamples=5, datasetLength = 10, skipSamples=10, dbUpdateTime = 1800):
 
         #Initializing Base class
         super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensors/", logs = logs)
@@ -33,16 +33,17 @@ class Sensor(Base.Base):
         self.skipSamples = skipSamples
         self.sampleCount = 0
 
-
         #Initializing filter
         self.avgFilter = AvgFilter.AvgFilter(path=self.path, logs=logs)
         self.avgFilter.enable(filterSamples)
 
         #Initializing DataLogger
-        self.dataLogger = DataLogger.DataLogger(initFile='sensorinit', storage=storage ,storageRoute=self.path+"/", logs=logs)
+        self.dataLogger = DataLogger.DataLogger('sensorinit' , storage=storage , storageRoute=self.path+"/", logs=logs)
 
 
-
+        #set pediodic updates to DB
+        self.setUptateTime(dbUpdateTime)
+        self.setPeriodicDBUpdates()
 
     #-------------------------------------------------------------------------
     # Filtering methods
@@ -61,7 +62,6 @@ class Sensor(Base.Base):
 
         #maxSampleCount to updata dataset
         if self.sampleCount >= self.skipSamples:
-            self.saveDataToDB()
             self.datasetDataEntry()
             self.sampleCount = 0
         else:
@@ -112,6 +112,8 @@ class Sensor(Base.Base):
         self.console.log("Logging dataset")
         self.dataLogger.newLogEntry(self.data, self.avgFilter.getValue() , datetime.datetime.now().strftime("%H:%M"))
 
+    def __del__(self):
+        self.stopPeriodicDBUpdates()
 
 
 if __name__ == '__main__':
