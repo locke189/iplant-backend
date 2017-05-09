@@ -23,28 +23,27 @@ class Sensor(Base.Base):
         super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensors/", logs = logs)
         self.subscribeDataTopic()
 
-        #datasets
-        self.dataset = []
-        self.datasetAvg = []
-        self.datasetLabel = []
-        self.datasetLength = datasetLength
-
-        #Skip samples
-        self.skipSamples = skipSamples
-        self.sampleCount = 0
-
-        #Initializing filter
-        self.avgFilter = AvgFilter.AvgFilter(path=self.path, logs=logs)
-        self.avgFilter.enable(filterSamples)
 
         #Initializing DataLogger
-        fileName = self.path.replace("/","")
-        self.dataLogger = DataLogger.DataLogger(fileName , storage=storage , storageRoute=self.path+"/", logs=logs)
+        if self.type != "CAM":
+            #datasets
+            self.dataset = []
+            self.datasetAvg = []
+            self.datasetLabel = []
+            self.datasetLength = datasetLength
 
+            #Skip samples
+            self.skipSamples = skipSamples
+            self.sampleCount = 0
 
-        #set pediodic updates to DB
-        self.setUptateTime(dbUpdateTime)
-        self.setPeriodicDBUpdates()
+            #Initializing filter
+            self.avgFilter = AvgFilter.AvgFilter(path=self.path, logs=logs)
+            self.avgFilter.enable(filterSamples)
+            fileName = self.path.replace("/","")
+            self.dataLogger = DataLogger.DataLogger(fileName , storage=storage , storageRoute=self.path+"/", logs=logs)
+            #set pediodic updates to DB
+            self.setUptateTime(dbUpdateTime)
+            self.setPeriodicDBUpdates()
 
     #-------------------------------------------------------------------------
     # Filtering methods
@@ -57,34 +56,46 @@ class Sensor(Base.Base):
     # Overide of setData method to include update of filters and labels
     def setData(self, topic, payload):
         super().setData(topic,payload)
-        #Running AVG filter implementation
-        if self.avgFilter.isEnabled():
-            self.avgFilter.run(self.data)
 
-        #maxSampleCount to updata dataset
-        if self.sampleCount >= self.skipSamples:
-            self.datasetDataEntry()
-            self.sampleCount = 0
+        if self.type != "CAM":
+            #Running AVG filter implementation
+            if self.avgFilter.isEnabled():
+                self.avgFilter.run(self.data)
+
+            #maxSampleCount to updata dataset
+            if self.sampleCount >= self.skipSamples:
+                self.datasetDataEntry()
+                self.sampleCount = 0
+            else:
+                self.sampleCount += 1
         else:
-            self.sampleCount += 1
-
+            self.saveDataToDB()
 
     #Sets the string that is going to be sent to the database
     def getDataDictionary(self):
-        data = {
-            "id": self.id,
-            "type": self.type,
-            "enabled": self.enabled,
-            "data":  self.data,
-            "timestamp": self.timestamp,
-            "filter": self.avgFilter.isEnabled(),
-            "avgData": self.avgFilter.getValue(),
-            "filterSamples": self.avgFilter.filterSamples,
-            "dataset": self.dataset,
-            "datasetAvg": self.datasetAvg,
-            "datasetLabel": self.datasetLabel,
-            "historic": self.dataLogger.logInfo["logs"]
-            }
+        if self.type != "CAM":
+            data = {
+                "id": self.id,
+                "type": self.type,
+                "enabled": self.enabled,
+                "data":  self.data,
+                "timestamp": self.timestamp,
+                "filter": self.avgFilter.isEnabled(),
+                "avgData": self.avgFilter.getValue(),
+                "filterSamples": self.avgFilter.filterSamples,
+                "dataset": self.dataset,
+                "datasetAvg": self.datasetAvg,
+                "datasetLabel": self.datasetLabel,
+                "historic": self.dataLogger.logInfo["logs"]
+                }
+        else:
+            data = {
+                "id": self.id,
+                "type": self.type,
+                "enabled": self.enabled,
+                "data":  self.data,
+                "timestamp": self.timestamp,
+                }
         return data
 
     #-----------------------------------------------------------------------

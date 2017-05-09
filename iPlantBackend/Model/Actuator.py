@@ -22,7 +22,10 @@ class Actuator(Base.Base):
                 "ON":       1,
                 "TOGGLE":   2,
                 "ERROR":    False,
-                "IDLE":     False}
+                "IDLE":     False,
+                "CAPTURE":  3,
+                "START":    4,
+                "STOP":     5 }
 
 
     def __init__(self, database, broker, id, type, enabled, devicePath, logs=True, maxRetry=2, retryTime=8):

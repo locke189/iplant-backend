@@ -41,6 +41,7 @@ class Device:
             self.online = True
         if topic == "disconnected":
             self.online = False
+        self.saveDeviceToDB()
 
     def brokerCallback(self, topic, payload):
         payload2 = payload.replace("'", '"')
