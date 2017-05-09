@@ -68,6 +68,8 @@ class Base:
     def streamFromDB(self, property, callback):
         self.db.setStream(self.path +"/"+ property, callback)
         self.streams.append(self.path +"/"+ property)
+        self.db.checkAliveStream()
+
 
     def closeStreams(self):
         while (self.streams != [] ):

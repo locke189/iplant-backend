@@ -9,6 +9,7 @@ Don't blink...
 
 import pyrebase
 from Shared import Logger
+import threading
 
 class Database:
     def __init__(self,options,logs = True, debug=False):
@@ -18,6 +19,8 @@ class Database:
         self.db = self.firebase.database()
         self.debug = debug
         self.streams = {}
+        self.streamFunctions = {}
+        self.timerInterval = 60 # check if thread is alive
 
     def setData(self, path, data):
         self.console.log("Database SET")
@@ -50,7 +53,16 @@ class Database:
 
     def setStream(self, path, function):
         self.console.log("Streaming: %s " , path )
+        self.streamFunctions[path] = function
         self.streams[path] = self.db.child(path).stream(function)
+
+    def checkAliveStream(self):
+        if(self.streams != {}):
+            for path in self.streams.keys():
+                if (not self.streams[path].thread.is_alive() ):
+                    self.console.log("Stream dead: %s... restarting" , path )
+                    self.setStream(path, self.streamFunctions[path])
+        threading.Timer(self.timerInterval, self.checkAliveStream).start()
 
     def closeStream(self, path):
         self.console.log("Closing stream: %s " , path )
