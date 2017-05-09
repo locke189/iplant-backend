@@ -8,6 +8,12 @@ from Managers import DeviceManager
 from Model import Device, Sensor
 from Database import Database, Storage
 from Shared import Logger
+import time
+
+# Waits for services to be ready in RPi
+if sys.platform != "darwin":
+    time.sleep(60)
+
 
 #creates Application Logger
 console = Logger.Logger(logName='Application', enabled=True, printConsole=True)
