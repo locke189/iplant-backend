@@ -17,6 +17,7 @@ class Device:
     def __init__(self, database, storage, id, type, broker, enabled, basePath="", topicSensor="/regSensor", topicActuator="/regActuator", logs=True, logName="Device"):
         self.db = database
         self.storage = storage
+        self.online = True
         self.id = id
         self.type = type
         self.enabled = enabled
@@ -31,9 +32,15 @@ class Device:
         self.broker = broker
         self.broker.subscribeTopicWithCallback(self.topicSensor, self.brokerCallback )
         self.broker.subscribeTopicWithCallback(self.topicActuator, self.brokerCallback )
+        self.broker.subscribeTopicWithCallback(self.path, self.onlineCheck )
         self.saveDeviceToDB()
 
 
+    def onlineCheck(self, topic, payload):
+        if topic == "connected":
+            self.online = True
+        if topic == "disconnected":
+            self.online = False
 
     def brokerCallback(self, topic, payload):
         payload2 = payload.replace("'", '"')
@@ -65,6 +72,7 @@ class Device:
             "type": self.type,
             "enabled": self.enabled,
             "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            "online": self.online
             }
 
         return data
