@@ -31,7 +31,7 @@ class Broker:
         self.mqttc.on_unsubscribe = self._on_unsubscribe
         self.mqttc.on_publish = self._on_publish
         self.mqttc.on_log = self._on_log
-        self.mqttc.connect(host='localhost', port=1883)
+        self.mqttc.connect(host='protorpi201.local', port=1883)
         self.callbackFunctions = {}
 
     def _on_log(self, client, userdata, level, buf):
