@@ -31,6 +31,7 @@ class Device:
         self.broker = broker
         self.broker.subscribeTopicWithCallback(self.topicSensor, self.brokerCallback )
         self.broker.subscribeTopicWithCallback(self.topicActuator, self.brokerCallback )
+        self.saveDeviceToDB()
 
 
 
@@ -56,8 +57,6 @@ class Device:
                 self.saveDeviceToDB()
             else:
                 self.console.log("Sensor already exists")
-
-
 
 
     def getDeviceData(self):

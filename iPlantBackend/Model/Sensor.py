@@ -38,7 +38,8 @@ class Sensor(Base.Base):
         self.avgFilter.enable(filterSamples)
 
         #Initializing DataLogger
-        self.dataLogger = DataLogger.DataLogger('sensorinit' , storage=storage , storageRoute=self.path+"/", logs=logs)
+        fileName = self.path.replace("/","")
+        self.dataLogger = DataLogger.DataLogger(fileName , storage=storage , storageRoute=self.path+"/", logs=logs)
 
 
         #set pediodic updates to DB
