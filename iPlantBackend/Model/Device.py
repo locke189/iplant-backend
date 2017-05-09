@@ -71,7 +71,7 @@ class Device:
             "id": self.id,
             "type": self.type,
             "enabled": self.enabled,
-            "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "online": self.online
             }
 
