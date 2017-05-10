@@ -37,9 +37,9 @@ class Device:
 
 
     def onlineCheck(self, topic, payload):
-        if topic == "connected":
+        if payload == "connected":
             self.online = True
-        if topic == "disconnected":
+        if payload == "disconnected":
             self.online = False
         self.saveDeviceToDB()
 
