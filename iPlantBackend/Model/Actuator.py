@@ -13,7 +13,7 @@ from Model import DataLogger
 from Shared import Logger
 from Broker import Broker
 from Model import Base
-import threading
+from apscheduler.schedulers.background import BackgroundScheduler
 import time
 
 class Actuator(Base.Base):
@@ -28,7 +28,7 @@ class Actuator(Base.Base):
                 "STOP":     5 }
 
 
-    def __init__(self, database, broker, id, type, enabled, devicePath, logs=True, maxRetry=2, retryTime=8):
+    def __init__(self, database, broker, id, type, enabled, devicePath, logs=True, maxRetry=3, retryTime=8):
 
         #Initializing Base class
         super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/actuators/", logs = logs)
@@ -47,6 +47,13 @@ class Actuator(Base.Base):
         self.subscribeDataTopic()
         self.streamFromDB("enabled", self.changeEnabledStateFromDB)
         self.streamFromDB("actions", self.changeActionsFromDB)
+
+        # Scheduler
+        self.jobId = self.path.replace("/","")
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.job = self.scheduler.add_job(self.publishAndRetry, 'interval', seconds=self.retryTime, id=self.jobId, replace_existing=True)
+        self.job.pause()
 
 
     #Sets the dictionary that is going to be sent to the database.
@@ -85,7 +92,6 @@ class Actuator(Base.Base):
                     self.console.log("Unrecognized action from remote: %s", self.action)
                     self.action = "IDLE"
                     self.saveDataToDB()
-                    time.sleep(2)
 
 
     def publishAndRetry(self):
@@ -94,20 +100,20 @@ class Actuator(Base.Base):
                 self.retry += 1
                 self.console.log("Sending message attempt %s", self.retry)
                 self.broker.publishMessage(self.path, self.message)
-                self.timer = threading.Timer(self.retryTime, self.publishAndRetry).start()
+                self.job.resume()
             elif self.busy and self.retry >= self.maxRetry:
                 self.console.log("TIMEOUT: maximum attemps reached")
                 self.busy = False
                 self.retry = 0
                 self.action = "TIMEOUT"
                 self.saveDataToDB()
-                time.sleep(2)
+                self.job.pause()
             else:
                 self.busy = False
                 self.retry = 0
                 self.action = "IDLE"
                 self.saveDataToDB()
-                time.sleep(2)
+                self.job.pause()
 
 
     # Overide of setData method to include resetting of busy and
@@ -118,7 +124,7 @@ class Actuator(Base.Base):
         self.retry = 0
         self.action = "IDLE"
         self.saveDataToDB()
-        time.sleep(2)
+
 
 
 

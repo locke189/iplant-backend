@@ -82,14 +82,14 @@ class Device:
     def saveDeviceToDB(self):
         self.console.log("Saving device data to database")
         data = self.getDeviceData()
-        self.db.updateData(self.path,data)
+        self.db.updateData(self.path, data)
         for sensorId in self.sensors.keys():
             self.sensors[sensorId].saveDataToDB()
         for actuatorId in self.actuators.keys():
             self.actuators[actuatorId].saveDataToDB()
 
     def addSensor(self, sensorId, type, enabled):
-        self.console.log("Adding sensor(%s) %s ",(sensorId, type))
+        self.console.log("Adding sensor(%s) %s ", (sensorId, type))
         self.sensors[sensorId] = Sensor.Sensor(database=self.db, storage=self.storage, broker = self.broker, id=sensorId, type=type, enabled=enabled, filterSamples=30, devicePath= self.path, datasetLength = 24, skipSamples=30)
 
     def addActuator(self, actuatorId, type, enabled):

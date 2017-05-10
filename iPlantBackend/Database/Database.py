@@ -9,7 +9,7 @@ Don't blink...
 
 import pyrebase
 from Shared import Logger
-import threading
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class Database:
     def __init__(self,options,logs = True, debug=False):
@@ -20,7 +20,14 @@ class Database:
         self.debug = debug
         self.streams = {}
         self.streamFunctions = {}
-        self.timerInterval = 60 # check if thread is alive
+        self.timerInterval = 1 # check if thread is alive
+
+        # Scheduler
+        self.jobId = "DATABASE"
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.job = self.scheduler.add_job(self.checkAliveStream, 'interval', minutes=self.timerInterval, id=self.jobId, replace_existing=True)
+
 
     def setData(self, path, data):
         self.console.log("Database SET")
@@ -62,13 +69,14 @@ class Database:
                 if (not self.streams[path].thread.is_alive() ):
                     self.console.log("Stream dead: %s... restarting" , path )
                     self.setStream(path, self.streamFunctions[path])
-        threading.Timer(self.timerInterval, self.checkAliveStream).start()
+
 
     def closeStream(self, path):
         self.console.log("Closing stream: %s " , path )
         self.streams[path].close()
 
     def __del__(self):
+        self.scheduler.shutdown(wait=False)
         pass
 
 if __name__ == '__main__':

@@ -7,12 +7,11 @@ Don't blink...
 @author: Juan_Insuasti
 '''
 
-import sys
 import datetime
-import threading
-from Model import DataLogger
+
+from apscheduler.schedulers.background import BackgroundScheduler
 from Shared import Logger
-from Broker import Broker
+
 
 class Base:
     #Base class
@@ -29,7 +28,7 @@ class Base:
         self.streams = []
 
 
-        self.timerInterval = 5 #seconds
+        self.timerInterval = 30 #minutes
         self.periodicUpdates = False
 
         #Data related
@@ -45,6 +44,13 @@ class Base:
         #self.broker.setCallback(self.brokerCallback)
         #self.broker.start()
 
+
+        # Scheduler
+        self.jobId = self.path.replace("/","")
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.job = self.scheduler.add_job(self.saveDataToDB, 'interval', minutes=self.timerInterval, id=self.jobId, replace_existing=True)
+        self.job.pause()
 
     #-------------------------------------------------------------
     #Broker Methods:
@@ -120,26 +126,27 @@ class Base:
             data = self.getDataDictionary()
 
         self.db.updateData(self.path,data)
-        if self.periodicUpdates:
-            threading.Timer(self.timerInterval, self.saveDataToDB).start()
+
 
     def setUptateTime(self, seconds):
         self.timerInterval = seconds
         self.console.log("Setting Periodic updates to %s seconds", self.timerInterval)
+        self.job.reschedule(trigger='interval', minutes=self.timerInterval)
+
 
     def setPeriodicDBUpdates(self):
         self.console.log("Starting periodic updates to DB")
-        self.periodicUpdates = True
-        threading.Timer(self.timerInterval, self.saveDataToDB).start()
+        self.job.resume()
 
     def stopPeriodicDBUpdates(self):
         self.console.log("Stopping periodic updates to DB")
-        self.periodicUpdates = False
+        self.job.pause()
 
     #-------------------------------------------------------------
     #Destroyer Method
     def __del__(self):
         self.closeStreams()
+        self.scheduler.shutdown(wait=False)
         pass
 
 
