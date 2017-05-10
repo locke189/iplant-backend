@@ -9,7 +9,7 @@ Don't blink...
 import sys
 import datetime
 import os.path
-import json
+import json 
 
 class Logger:
     def __init__(self, logName="Log", file="log.txt", enabled=True, printConsole=True, saveFile=False, saveCloud=False):

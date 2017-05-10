@@ -6,7 +6,7 @@ Don't blink...
 @author: Juan_Insuasti
 '''
 from Model import Sensor
-from Model import Actuator
+from Model import Actuator, Camera
 import sys
 import datetime
 from Shared import Logger
@@ -52,9 +52,14 @@ class Device:
 
         if (topic ==  self.topicActuator):
             if ( data['id'] not in self.actuators.keys()):
-                self.console.log("New Actuator")
-                self.addActuator(data['id'], data['type'], True)
-                self.saveDeviceToDB()
+                if ( data['type'] == "CAM" ):
+                    self.console.log("New Camera")
+                    self.addCamera(data['id'], data['type'], True, data['settings'])
+                    self.saveDeviceToDB()
+                else:
+                    self.console.log("New Actuator")
+                    self.addActuator(data['id'], data['type'], True)
+                    self.saveDeviceToDB()
             else:
                 self.console.log("Actuator already exists")
 
@@ -95,6 +100,10 @@ class Device:
     def addActuator(self, actuatorId, type, enabled):
         self.console.log("Adding Actuator(%s) %s ",(actuatorId, type))
         self.actuators[actuatorId] = Actuator.Actuator(database=self.db, broker = self.broker, id=actuatorId, type=type, enabled=enabled, devicePath= self.path)
+
+    def addCamera(self, cameraId, type, enabled, settings):
+        self.console.log("Adding Camera(%s) %s ",(cameraId, type))
+        self.actuators[cameraId] = Camera.Camera(database=self.db, broker = self.broker, id=cameraId, type=type, enabled=enabled, devicePath= self.path, settings = settings)
 
 
 
