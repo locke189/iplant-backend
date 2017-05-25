@@ -119,10 +119,10 @@ class Sensor(Base.Base):
 
         self.datasetAvg.append( self.avgFilter.getValue() )
         self.dataset.append(self.data)
-        self.datasetLabel.append(datetime.datetime.now().strftime("%H:%M"))
+        self.datasetLabel.append(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         self.console.log("Logging dataset")
-        self.dataLogger.newLogEntry(self.data, self.avgFilter.getValue() , datetime.datetime.now().strftime("%H:%M"))
+        self.dataLogger.newLogEntry(self.data, self.avgFilter.getValue() , datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def __del__(self):
         self.stopPeriodicDBUpdates()
