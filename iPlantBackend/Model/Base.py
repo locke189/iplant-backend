@@ -13,7 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from Shared import Logger
 
 
-class Base:
+class Base(object):
     #Base class
     #Implements all the base attributes for sensors/actuators as well as
     #specific broker, database update / receive methods.
@@ -24,11 +24,11 @@ class Base:
         self.type = type
         self.enabled = enabled
         self.path = devicePath + categoryPath + str(self.id)
-        self.timestamp = ""
+        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.streams = []
 
 
-        self.timerInterval = 30 #minutes
+        self.timerInterval = 2 #minutes / TODO overide this value
         self.periodicUpdates = False
 
         #Data related
@@ -121,16 +121,18 @@ class Base:
     #can be used for a manual update.
     def saveDataToDB(self, data = None):
         self.console.log("Saving data to database")
+        if data is None:
+            payload = self.getDataDictionary()
+        else:
+            payload = data
 
-        if data == None:
-            data = self.getDataDictionary()
-
-        self.db.updateData(self.path,data)
+        self.console.log("data=%s timestamp=%s", (payload["data"],payload["timestamp"]))
+        self.db.updateData(self.path, payload)
 
 
     def setUptateTime(self, seconds):
         self.timerInterval = seconds
-        self.console.log("Setting Periodic updates to %s seconds", self.timerInterval)
+        self.console.log("Setting Periodic updates to %s minutes", self.timerInterval)
         self.job.reschedule(trigger='interval', minutes=self.timerInterval)
 
 

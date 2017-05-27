@@ -14,6 +14,10 @@ from Broker import Broker
 import json
 
 class Device:
+
+
+
+
     def __init__(self, database, storage, id, type, broker, enabled, basePath="", topicSensor="/regSensor", topicActuator="/regActuator", logs=True, logName="Device"):
         self.db = database
         self.storage = storage
@@ -23,6 +27,8 @@ class Device:
         self.enabled = enabled
         self.sensors = {}
         self.actuators = {}
+        self.updateTime = { 'MST': 60,
+                           'LIG': 5 }
         self.path = basePath + "/devices/" + str(self.id)
         self.console = Logger.Logger(logName="Device("+self.path+")", enabled=logs, printConsole=True)
         self.topicSensor = self.path + topicSensor
@@ -94,8 +100,10 @@ class Device:
             self.actuators[actuatorId].saveDataToDB()
 
     def addSensor(self, sensorId, type, enabled):
+
+
         self.console.log("Adding sensor(%s) %s ", (sensorId, type))
-        self.sensors[sensorId] = Sensor.Sensor(database=self.db, storage=self.storage, broker = self.broker, id=sensorId, type=type, enabled=enabled, filterSamples=30, devicePath= self.path, datasetLength = 24, skipSamples=30)
+        self.sensors[sensorId] = Sensor.Sensor(database=self.db, storage=self.storage, broker = self.broker, id=sensorId, type=type, enabled=enabled, filterSamples=30, devicePath= self.path, datasetLength = 24, skipSamples=30, dbUpdateTime=self.updateTime[type])
 
     def addActuator(self, actuatorId, type, enabled):
         self.console.log("Adding Actuator(%s) %s ",(actuatorId, type))

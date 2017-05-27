@@ -17,7 +17,8 @@ from Model import AvgFilter
 
 class Sensor(Base.Base):
 
-    def __init__(self, database, storage, broker, id, type, enabled, devicePath, logs=True, filterSamples=5, datasetLength = 10, skipSamples=10, dbUpdateTime = 1800):
+    def __init__(self, database, storage, broker, id, type, enabled, devicePath,
+                 logs=True, filterSamples=5, datasetLength = 10, skipSamples=10, dbUpdateTime = 30):
 
         #Initializing Base class
         super().__init__(database, broker, id, type, enabled, devicePath, categoryPath="/sensors/", logs = logs)
@@ -40,7 +41,7 @@ class Sensor(Base.Base):
             self.avgFilter = AvgFilter.AvgFilter(path=self.path, logs=logs)
             self.avgFilter.enable(filterSamples)
             fileName = self.path.replace("/","")
-            self.dataLogger = DataLogger.DataLogger(fileName , storage=storage , storageRoute=self.path+"/", logs=logs)
+            self.dataLogger = DataLogger.DataLogger(fileName , logPrefix= fileName + '-', storage=storage , storageRoute=self.path+"/", logs=logs)
             #set pediodic updates to DB
             self.setUptateTime(dbUpdateTime)
             self.setPeriodicDBUpdates()
